@@ -1,9 +1,9 @@
 # {Project Name} by MKED
 # Roster:
-Kalimul Kaif - Project Manager (PM)
-David Lee - Fullstack Devo 1
-Ethan Saldanha - placeholder
-Mottaqi A - placeholder
+Kalimul Kaif - Project Manager (PM) <br>
+David Lee - Fullstack Devo 1 <br>
+Ethan Saldanha - placeholder <br>
+Mottaqi A - placeholder <br>
 
 # Description:
 placeholder
