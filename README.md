@@ -3,7 +3,7 @@
 Kalimul Kaif - Project Manager (PM) <br>
 David Lee - Fullstack Devo 1 <br>
 Ethan Saldanha - placeholder <br>
-Mottaqi A - placeholder <br>
+Mottaqi Abedin - placeholder <br>
 
 # Description:
 placeholder
