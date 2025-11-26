@@ -1,3 +1,4 @@
 davidL -- 2025-11-25 11:26
 - initialized files and directories for p01
 - filled out readme
+- made team flag
