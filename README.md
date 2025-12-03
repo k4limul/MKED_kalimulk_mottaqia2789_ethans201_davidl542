@@ -1,12 +1,12 @@
-# {Project Name} by MKED
+# LiveMKED by MKED
 # Roster:
 Kalimul Kaif - Project Manager (PM) <br>
 David Lee - Fullstack Devo 1 <br>
-Ethan Saldanha - placeholder <br>
-Mottaqi Abedin - placeholder <br>
+Ethan Saldanha - Fullstack Devo 2 <br>
+Mottaqi Abedin - Fullstack Devo 3 <br>
 
 # Description:
-placeholder
+Introducing LiveMKED, a web application that helps users find ideal places to live in the USA by combining job opportunities, salary data and weather conditions. Users can search for specific jobs and filter locations based on multiple lifestyle and financial factors.
 
 # Install guide:
 To clone the repo, open the terminal and enter:
