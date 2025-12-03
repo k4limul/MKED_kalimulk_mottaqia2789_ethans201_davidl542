@@ -8,5 +8,6 @@ davidL -- 2025-12-02 07:00
 - printed DD HC x3
 
 davidL -- 2025-12-02 23:58
-- updated design doc v1 --> v2
+- updated design doc v1 --> v2 based on peer review 12/02 in-class
 - printed DD HC x1
+- updated README.md
