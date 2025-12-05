@@ -21,3 +21,16 @@ app = Flask(__name__)
 
 app.secret_key = "secret_key_testing"
 DB_FILE = "api_website.db"
+
+def initialize_db():
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+  
+  c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE);")
+  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, state TEXT, city TEXT, job_title TEXT, avg_salary INTEGER, weather_condition TEXT, date_saved DATE);")
+  c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
+
+  db.commit()
+  db.close()
+
+@app.route("/", methods=['GET', 'POST'])
