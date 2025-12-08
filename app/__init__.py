@@ -35,6 +35,11 @@ def initialize_db():
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
+  if 'username' in session:
+    return redirect(url_for('homepage'))
+  else:
+    text = ""
+    return render_template("login.html", text=text)
   return render_template('login.html')
 
 @app.route("/login", methods=["GET", "POST"])
@@ -87,6 +92,14 @@ def register():
     session['username'] = username
     return redirect(url_for('homepage'))
   return render_template('register.html')
+
+@app.route("/homepage")
+def homepage():
+  if 'username' not in session:
+    return redirect(url_for('index'))
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+  db.close()
 
 if __name__ == "__main__":
   initialize_db()
