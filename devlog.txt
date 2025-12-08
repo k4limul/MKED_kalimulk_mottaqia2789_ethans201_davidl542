@@ -16,3 +16,7 @@ davidL -- 2025-12-05 11:32
 - updated requirements.txt
 - set up __init__.py
 - updated .gitignore
+
+davidL -- 2025-12-08 11:44
+- set up login + register (register needs debugging)
+- need to set up homepage

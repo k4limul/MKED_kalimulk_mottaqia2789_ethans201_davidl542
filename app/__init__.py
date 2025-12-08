@@ -39,12 +39,56 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+  if request.method == 'POST':
+    username = request.form['username']
+    password = request.form['password']
+    db = sqlite3.connect(DB_FILE)
+    c = db.cursor()
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = c.fetchone()
+    db.close()
+    
+    if user == None or user[0] != username or user[1] != password:
+      print("username/password do not match our records")
+      text = "login failed, create new acc?"
+      return render_template('login.html', text=text)
+    elif user[0] == username and user[1] == password:
+      session['username'] = username
+      return redirect(url_for('homepage'))
+    else:
+      return redirect(url_for('index'))
+  return redirect(url_for('index'))
+  return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    return "<h1>temp</h1>"
+  if request.method == 'POST':
+    db = sqlite3.connect(DB_FILE)
+    c = db.cursor()
+    username = request.form['username']
+    email = request.form['email']
+    password = request.form['password']
+    
+    cmd = f"SELECT * FROM users WHERE username = '{username}'"
+    c.execute(cmd)
+    existing_user = c.fetchone()
+ 
+    if existing_user:
+      db.close()
+      text = "username already taken, try another one!"
+      return render_template('register.html', text = text)
+
+    creation_date = int(time.time())
+
+    cmd = f"INSERT into users VALUES ('{username}', '{email}', '{password}', '{creation_date}')"
+    c.execute(cmd)
+    db.commit()
+    db.close()
+    session['username'] = username
+    return redirect(url_for('homepage'))
+  return render_template('register.html')
 
 if __name__ == "__main__":
+  initialize_db()
   app.debug = True
   app.run()

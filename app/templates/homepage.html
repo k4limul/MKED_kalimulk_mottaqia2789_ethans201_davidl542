@@ -1,0 +1,31 @@
+<!--
+Kalimul Kaif, David Lee, Mottaqi Abedin, Ethan Salanha
+MKED
+SoftDev
+P01 -- ArRESTed Development
+2025-12-22
+time spent: 0.0 hr
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../static/homepage.css" />
+  <link rel="stylesheet" href="../static/nav.css" />
+
+    <title>Homepage</title>
+</head>
+<body>
+    <h1>LiveMKED</h1>
+
+    <nav>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
+        <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+      </ul>
+    </nav>
+
+    <h3>welcome, {{username}}!</h3>
+    <hr>
+
+</body>
+</html>
