@@ -1,0 +1,33 @@
+<!--
+Kalimul Kaif, David Lee, Ethan Saldanha, Mottaqi Abedin
+MKED
+SoftDev 2025
+P01 -- ArRESTed Development
+2025-12-22
+Time spent: 0 hr
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form action="{{ url_for('login') }}" method="POST">
+        <label>Username</label>
+        <input type="text" name="username" required>
+        <br><br>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+        <br><br>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <br>
+    <p>you new? <a href="{{ url_for('register') }}">create account</a></p>
+
+</body>
+</html>

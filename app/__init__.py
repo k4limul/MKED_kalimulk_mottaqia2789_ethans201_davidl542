@@ -6,7 +6,7 @@ P01 -- ArRESTed Development
 2025-12-22
 Time spent: 0 hr
 '''
-from flask import Flask
+from flask import Flask, request, session, redirect, url_for, render_template
 from flask import request
 from flask import session
 from flask import redirect
@@ -34,3 +34,17 @@ def initialize_db():
   db.close()
 
 @app.route("/", methods=['GET', 'POST'])
+def index():
+  return render_template('login.html')
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    return render_template("login.html")
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    return "<h1>temp</h1>"
+
+if __name__ == "__main__":
+  app.debug = True
+  app.run()
