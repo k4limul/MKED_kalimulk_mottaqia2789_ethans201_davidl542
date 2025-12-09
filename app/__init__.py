@@ -93,13 +93,15 @@ def register():
     return redirect(url_for('homepage'))
   return render_template('register.html')
 
-@app.route("/homepage")
+@app.route("/homepage", methods=["GET", "POST"])
 def homepage():
   if 'username' not in session:
     return redirect(url_for('index'))
-  db = sqlite3.connect(DB_FILE)
-  c = db.cursor()
-  db.close()
+  return render_template("homepage.html")
+
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+  return render_template("login.html")
 
 if __name__ == "__main__":
   initialize_db()
