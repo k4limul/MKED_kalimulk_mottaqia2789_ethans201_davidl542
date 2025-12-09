@@ -99,6 +99,18 @@ def homepage():
     return redirect(url_for('index'))
   return render_template("homepage.html")
 
+@app.route("/profile", methods=["GET", "POST"])
+def profile():
+  return render_template("profile.html")
+
+@app.route("/search", methods=["GET", "POST"])
+def search():
+  return render_template("search.html")
+
+@app.route("/my_jobs", methods=["GET", "POST"])
+def my_jobs():
+  return render_template("my_jobs.html")
+
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
   return render_template("login.html")

@@ -1,21 +1,26 @@
 <!--
-Kalimul Kaif, David Lee, Mottaqi Abedin, Ethan Salanha
+Kalimul Kaif, David Lee, Ethan Saldanha, Mottaqi Abedin
 MKED
 SoftDev
-P01 -- ArRESTed Development
+P01 - ArRESTed Development
 2025-12-22
-time spent: 0.0 hr
+time spent: 0 hr
 -->
 <!DOCTYPE html>
 <html>
-<head>
-  <link rel="stylesheet" href="../static/homepage.css" />
-  <link rel="stylesheet" href="../static/nav.css" />
+  <head>
+    <link rel="stylesheet" href="../static/search.css"/>
+    <link rel="stylesheet" href="../static/nav.css" />
 
-    <title>Homepage</title>
-</head>
-<body>
-    <h1>LiveMKED: Work Better, Live Better</h1>
+    <title>Search Jobs</title>
+    <h1>Search Jobs</h1>
+    <style>
+      textarea {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
     <nav>
       <ul class="nav-links">
         <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
@@ -26,8 +31,11 @@ time spent: 0.0 hr
       </ul>
     </nav>
 
-    <h3>welcome, {{username}}!</h3>
-    <hr>
-
-</body>
+  </body>
 </html>
+
+
+
+
+
+
