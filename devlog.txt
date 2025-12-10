@@ -7,6 +7,11 @@ davidL -- 2025-12-02 07:00
 - uploaded design doc v1
 - printed DD HC x3
 
+INITIAL DD REVIEW -- 2025-12-02 23:58
+- included reason for choosing our FEF (TailwindCSS); important that we include all components of design doc
+- revised table descriptors for certain rows; avoid redundancies
+- fixed component map, make it simple yet precise and detailed (not a contradiction)
+
 davidL -- 2025-12-02 23:58
 - updated design doc v1 --> v2 based on peer review 12/02 in-class
 - printed DD HC x1
