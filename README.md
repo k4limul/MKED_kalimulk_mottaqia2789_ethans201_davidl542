@@ -6,7 +6,7 @@ Ethan Saldanha - Fullstack Devo 2 <br>
 Mottaqi Abedin - Fullstack Devo 3 <br>
 
 # Description:
-Introducing LiveMKED, a web application that helps users find ideal places to live in the USA by combining job opportunities, salary data and weather conditions. Users can search for specific jobs and filter locations based on multiple lifestyle and financial factors.
+Introducing LiveMKED, a web application that helps users find relevant job opportunities based on several factors including location, salary data, and weather conditions, etc. Users can search for specific jobs and filter locations based on multiple lifestyle and financial factors they consider important to their search. Functionalities include setting up your profile saving your jobs of interest, and much more.
 
 # Install guide:
 To clone the repo, open the terminal and enter:
