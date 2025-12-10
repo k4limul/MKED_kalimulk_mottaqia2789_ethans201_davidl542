@@ -7,20 +7,57 @@ P01 -- ArRESTed Development
 Time spent: 0 hr
 '''
 from flask import Flask, request, session, redirect, url_for, render_template
-from flask import request
-from flask import session
-from flask import redirect
-from flask import url_for
 import csv
 import sqlite3
 import random
 import time
+import os
 from datetime import datetime
 
 app = Flask(__name__)
 
 app.secret_key = "secret_key_testing"
 DB_FILE = "api_website.db"
+KEYS_DIR = os.path.join(os.path.dirname(__file__), "keys")
+
+def load_api_keys():
+  keys = {}
+
+  if not os.path.isdir(KEYS_DIR):
+    print("No Keys directory found. API calls will not occur.")
+    return keys
+  
+  for filename in os.listdir(KEYS_DIR):
+    if not filename.startswith("key_") or not  filename.endswith(".txt"):
+      continue
+    filepath = os.path.join(KEYS_DIR, filename)
+    api_name = filename[len("key_"):-4]
+    api_name_norm = api_name.upper()
+
+    try:
+      with open(filepath, "r") as f:
+        lines = [line.strip() for line in f.readlines()]
+        key_value = next((line for line in lines if line), "")
+        if not key_value:
+          print(f"{filename} is empty. No key for '{api_name_norm}'.")
+          continue
+        keys[api_name_norm] = key_value
+    except Exception as e:
+      print(f"Failed to read {filename}")
+
+    if not keys:
+      print("No API keys were loaded. Some features will not work.")
+
+    return keys
+
+
+API_KEYS = load_api_keys()
+
+def get_api_key(name):
+  key = API_KEYS.get(name.upper())
+  if key is None:
+    print(f"API key for '{name}' is missing. Any features will not work.")
+  return key
 
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
