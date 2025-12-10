@@ -31,30 +31,32 @@ def load_api_keys():
     if not filename.startswith("key_") or not  filename.endswith(".txt"):
       continue
     filepath = os.path.join(KEYS_DIR, filename)
-    api_name = filename[len("key_"):-4]
-    api_name_norm = api_name.upper()
+    api_name = filename[4:-4]
+    api_name_upper = api_name.upper()
 
     try:
-      with open(filepath, "r") as f:
+      with open(filepath, "r", encoding="utf-8") as f:
         lines = [line.strip() for line in f.readlines()]
         key_value = next((line for line in lines if line), "")
-        if not key_value:
-          print(f"{filename} is empty. No key for '{api_name_norm}'.")
-          continue
-        keys[api_name_norm] = key_value
     except Exception as e:
       print(f"Failed to read {filename}")
-
-    if not keys:
-      print("No API keys were loaded. Some features will not work.")
-
-    return keys
+    
+    if not key_value:
+      print(f"{filename} is empty. No key for '{api_name_upper}'.")
+      continue
+    
+    keys[api_name_upper] = key_value
+    print(f"loaded key {api_name_upper}")
+ 
+  print("API_KEYS loaded:", list(keys.keys()))
+  return keys
 
 
 API_KEYS = load_api_keys()
 
 def get_api_key(name):
-  key = API_KEYS.get(name.upper())
+  name_upper = name.upper()
+  key = API_KEYS.get(name_upper)
   if key is None:
     print(f"API key for '{name}' is missing. Any features will not work.")
   return key
@@ -77,7 +79,6 @@ def index():
   else:
     text = ""
     return render_template("login.html", text=text)
-  return render_template('login.html')
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -100,7 +101,6 @@ def login():
     else:
       return redirect(url_for('index'))
   return redirect(url_for('index'))
-  return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
