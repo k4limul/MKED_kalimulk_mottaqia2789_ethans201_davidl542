@@ -7,6 +7,7 @@ P01 -- ArRESTed Development
 Time spent: 0 hr
 '''
 from flask import Flask, request, session, redirect, url_for, render_template
+import requests
 import csv
 import sqlite3
 import random
@@ -26,7 +27,7 @@ def load_api_keys():
   if not os.path.isdir(KEYS_DIR):
     print("No Keys directory found. API calls will not occur.")
     return keys
-  
+
   for filename in os.listdir(KEYS_DIR):
     if not filename.startswith("key_") or not  filename.endswith(".txt"):
       continue
@@ -40,14 +41,14 @@ def load_api_keys():
         key_value = next((line for line in lines if line), "")
     except Exception as e:
       print(f"Failed to read {filename}")
-    
+
     if not key_value:
       print(f"{filename} is empty. No key for '{api_name_upper}'.")
       continue
-    
+
     keys[api_name_upper] = key_value
     print(f"loaded key {api_name_upper}")
- 
+
   print("API_KEYS loaded:", list(keys.keys()))
   return keys
 
@@ -64,7 +65,7 @@ def get_api_key(name):
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
-  
+
   c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE);")
   c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, state TEXT, city TEXT, job_title TEXT, avg_salary INTEGER, weather_condition TEXT, date_saved DATE);")
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
@@ -90,7 +91,7 @@ def login():
     c.execute("SELECT * FROM users WHERE username = ?", (username,))
     user = c.fetchone()
     db.close()
-    
+
     if user == None or user[0] != username or user[1] != password:
       print("username/password do not match our records")
       text = "login failed, create new acc?"
@@ -110,11 +111,11 @@ def register():
     username = request.form['username']
     email = request.form['email']
     password = request.form['password']
-    
+
     cmd = f"SELECT * FROM users WHERE username = '{username}'"
     c.execute(cmd)
     existing_user = c.fetchone()
- 
+
     if existing_user:
       db.close()
       text = "username already taken, try another one!"
@@ -151,6 +152,41 @@ def my_jobs():
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
   return render_template("login.html")
+
+
+def USAJOBS():
+    url = "https://data.usajobs.gov/api/search"
+    headers = {
+        "User-Agent": "esaldanha60@stuy.edu",
+        #"Authorization-Key":"5nx2mFDQDGYXgRcd/eISsYXOhm9WoVVGAKiveLyd47A="
+        "Authorization-Key": get_api_key("us-govt-jobs")
+    }
+    params = {
+        "LocationName": "California",
+        "ResultsPerPage": 5
+    }
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+    employer_dict = {}   # employer_name -> list of (location name, lat, lon)
+
+    for job in data["SearchResult"]["SearchResultItems"]:
+        descriptor = job["MatchedObjectDescriptor"]
+
+        employer = descriptor.get("OrganizationName")
+        locations = descriptor.get("PositionLocation", [])
+
+        if employer not in employer_dict:
+            employer_dict[employer] = []
+
+        for loc in locations:
+            loc_name = loc.get("LocationName")
+            lat = loc.get("Latitude")
+            lon = loc.get("Longitude")
+
+            if loc_name and lat is not None and lon is not None:
+                employer_dict[employer].append((loc_name, lat, lon))
+    return employer_dict
+print(USAJOBS())
 
 if __name__ == "__main__":
   initialize_db()
