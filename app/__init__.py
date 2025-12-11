@@ -26,7 +26,7 @@ def load_api_keys():
   if not os.path.isdir(KEYS_DIR):
     print("No Keys directory found. API calls will not occur.")
     return keys
-  
+
   for filename in os.listdir(KEYS_DIR):
     if not filename.startswith("key_") or not  filename.endswith(".txt"):
       continue
@@ -40,14 +40,14 @@ def load_api_keys():
         key_value = next((line for line in lines if line), "")
     except Exception as e:
       print(f"Failed to read {filename}")
-    
+
     if not key_value:
       print(f"{filename} is empty. No key for '{api_name_upper}'.")
       continue
-    
+
     keys[api_name_upper] = key_value
     print(f"loaded key {api_name_upper}")
- 
+
   print("API_KEYS loaded:", list(keys.keys()))
   return keys
 
@@ -64,7 +64,7 @@ def get_api_key(name):
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
-  
+
   c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE);")
   c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, state TEXT, city TEXT, job_title TEXT, avg_salary INTEGER, weather_condition TEXT, date_saved DATE);")
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
@@ -90,7 +90,7 @@ def login():
     c.execute("SELECT * FROM users WHERE username = ?", (username,))
     user = c.fetchone()
     db.close()
-    
+
     if user == None or user[0] != username or user[1] != password:
       print("username/password do not match our records")
       text = "login failed, create new acc?"
@@ -110,11 +110,11 @@ def register():
     username = request.form['username']
     email = request.form['email']
     password = request.form['password']
-    
+
     cmd = f"SELECT * FROM users WHERE username = '{username}'"
     c.execute(cmd)
     existing_user = c.fetchone()
- 
+
     if existing_user:
       db.close()
       text = "username already taken, try another one!"
@@ -134,7 +134,7 @@ def register():
 def homepage():
   if 'username' not in session:
     return redirect(url_for('index'))
-  return render_template("homepage.html")
+  return render_template("homepage.html", username=session['username'])
 
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
