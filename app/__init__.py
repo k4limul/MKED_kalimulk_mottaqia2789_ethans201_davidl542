@@ -154,7 +154,7 @@ def logout():
   return render_template("login.html")
 
 
-def USAJOBS():
+def USAJOBS(keyword=""):
     url = "https://data.usajobs.gov/api/search"
     headers = {
         "User-Agent": "esaldanha60@stuy.edu",
@@ -163,7 +163,8 @@ def USAJOBS():
     }
     params = {
         "LocationName": "California",
-        "ResultsPerPage": 5
+        "ResultsPerPage": 5,
+        keyword:""
     }
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
