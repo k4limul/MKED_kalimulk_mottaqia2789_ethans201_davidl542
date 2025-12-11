@@ -175,17 +175,17 @@ def USAJOBS():
         employer = descriptor.get("OrganizationName")
         locations = descriptor.get("PositionLocation", [])
 
-        if employer not in employer_dict:
-            employer_dict[employer] = []
+        if employer not in employers:
+            employers[employer] = []
 
         for loc in locations:
-            loc_name = loc.get("LocationName")
+            location = loc.get("LocationName")
             lat = loc.get("Latitude")
             lon = loc.get("Longitude")
 
-            if loc_name and lat is not None and lon is not None:
-                employer_dict[employer].append((loc_name, lat, lon))
-    return employer_dict
+            if location and lat is not None and lon is not None:
+                employers[employer].append((location, lat, lon))
+    return employers
 print(USAJOBS())
 
 if __name__ == "__main__":
