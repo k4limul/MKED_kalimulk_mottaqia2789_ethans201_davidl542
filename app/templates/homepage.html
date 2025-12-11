@@ -11,9 +11,10 @@ time spent: 0.0 hr
 <head>
   <link rel="stylesheet" href="../static/homepage.css" />
   <link rel="stylesheet" href="../static/nav.css" />
-
-    <title>Homepage</title>
+  
+  <title>Homepage</title>
 </head>
+
 <body>
     <h1>LiveMKED: Work Better, Live Better</h1>
     <nav>
@@ -29,5 +30,12 @@ time spent: 0.0 hr
     <h3>welcome, {{username}}!</h3>
     <hr>
 
+    <form action="{{ url_for('search') }}" method="GET">
+      <label for="search">Search For Job!!</label>
+      <div>
+        <input type="search" id="search" name="job_title" placeholder="Search for a job…" required />
+        <button type="submit">Search</button>
+      </div>
+    </form>
 </body>
 </html>
