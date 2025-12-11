@@ -167,7 +167,7 @@ def USAJOBS():
     }
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
-    employer_dict = {}   # employer_name -> list of (location name, lat, lon)
+    employers = {}   # employer_name -> list of (location name, lat, lon)
 
     for job in data["SearchResult"]["SearchResultItems"]:
         descriptor = job["MatchedObjectDescriptor"]
