@@ -34,6 +34,9 @@ mottaqiA -- 2025-12-10 1:25
 - added checks for api key files
 - removed redundant code
 
+ethanS -- 2025-12-10 11:40
+-added modular working function for obtaining data from USAJOBSAPI
+
 mottaqiA -- 2025-12-11 23:38
 - created functioning search with code from ethan
 - created a small details page that marks location for each job listed
