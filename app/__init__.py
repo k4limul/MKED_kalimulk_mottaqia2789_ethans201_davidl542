@@ -190,12 +190,23 @@ def USAJOBS(keyword="Defense",location="Virginia"):
 
 #print(USAJOBS())
 
+USAUPPERLAT=49.38
+USALOWERLAT=24.40
+USAUPPERLONG=-66.93
+USALOWERLONG=-125.0
+
 def RISEJOBS():
     url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
-
-    response=requests.get(url)
+    params = {
+        "limit": 5
+    }
+    response=requests.get(url, params=params)
     data=response.json()
-    return data
+    coords=[]
+    for c in data["result"]["jobs"]:
+        if c["owner"]["locationCoordinates"] is not None:
+            coords=[[c["owner"]["locationCoordinates"]["Latitude"]],c["owner"]["locationCoordinates"]["Longitude"]]
+    return coords
 
 print(RISEJOBS())
 
