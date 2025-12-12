@@ -187,7 +187,17 @@ def USAJOBS(keyword="Defense",location="Virginia"):
             if location and lat is not None and lon is not None:
                 employers[employer].append((location, lat, lon))
     return employers
-print(USAJOBS())
+
+#print(USAJOBS())
+
+def RISEJOBS():
+    url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
+
+    response=requests.get(url)
+    data=response.json()
+    return data
+
+print(RISEJOBS())
 
 if __name__ == "__main__":
   initialize_db()
