@@ -29,13 +29,10 @@ time spent: 0.0 hr
 
     <h3>welcome, {{username}}!</h3>
     <hr>
-
-    <form action="{{ url_for('search') }}" method="GET">
-      <label for="search">Search For Job!!</label>
-      <div>
-        <input type="search" id="search" name="job_title" placeholder="Search for a job…" required />
-        <button type="submit">Search</button>
-      </div>
+    <form action="{{ url_for('search') }}" method="POST">
+      <input type="text" name="keyword" placeholder="Job title..." required>
+      <input type="text" name="location" placeholder="City or State">
+      <button type="submit">Search</button>
     </form>
 </body>
 </html>

@@ -12,6 +12,7 @@ import sqlite3
 import random
 import time
 import os
+import requests
 from datetime import datetime
 
 app = Flask(__name__)
@@ -60,6 +61,53 @@ def get_api_key(name):
   if key is None:
     print(f"API key for '{name}' is missing. Any features will not work.")
   return key
+
+def USAJOBS(keyword, location):
+    url = "https://data.usajobs.gov/api/search"
+    headers = {
+        "User-Agent": "esaldanha60@stuy.edu",
+        "Authorization-Key": get_api_key("us-govt-jobs")
+    }
+    params = {
+        "LocationName": location,
+        "ResultsPerPage": 50,
+        "Keyword": keyword
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=6)
+        data = response.json()
+    except Exception as e:
+        print("USAJOBS request failed:", e)
+        return {}, "Error contacting USAJOBS API."
+
+    employers = {}  # employer_name -> list of (locationName, lat, lon)
+    user_loc = (location or "").strip().lower()
+
+    try:
+        for job in data["SearchResult"]["SearchResultItems"]:
+          descriptor = job["MatchedObjectDescriptor"]
+          employer = descriptor.get("OrganizationName", "Unknown Employer")
+          locations = descriptor.get("PositionLocation", [])
+          if employer not in employers:
+            employers[employer] = []
+          for loc in locations:
+            name = loc.get("LocationName")
+            lat = loc.get("Latitude")
+            lon = loc.get("Longitude")
+            if not name:
+              continue
+            if user_loc and user_loc not in name.lower():
+              continue
+            
+            if lat is not None and lon is not None:
+              employers[employer].append((name, lat, lon))
+
+        return employers, None
+
+    except Exception as e:
+        print("Parsing error:", e)
+        return {}, "Error parsing USAJOBS API response."
 
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
@@ -142,7 +190,57 @@ def profile():
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
-  return render_template("search.html")
+    if 'username' not in session:
+        return redirect(url_for('index'))
+
+    if request.method == "POST":
+        keyword = request.form.get("keyword", "").strip()
+        location = request.form.get("location", "").strip()
+
+        db = sqlite3.connect(DB_FILE)
+        c = db.cursor()
+        search_id = str(time.time())
+        filters_applied = f"location={location}"
+        c.execute(
+            "INSERT INTO search_history VALUES (?, ?, ?, ?, ?)",
+            (search_id, session['username'], int(time.time()), keyword, filters_applied)
+        )
+        db.commit()
+        db.close()
+
+        employers, error = USAJOBS(keyword, location)
+
+        return render_template(
+            "search.html",
+            keyword=keyword,
+            location=location,
+            employers=employers,
+            error=error
+        )
+
+    return render_template("search.html")
+
+@app.route("/job")
+def job_detail():
+    if 'username' not in session:
+        return redirect(url_for('index'))
+
+    employer = request.args.get("employer", "Unknown Employer")
+    location_name = request.args.get("location_name", "Unknown Location")
+    lat = request.args.get("lat")
+    lon = request.args.get("lon")
+
+    if not lat or not lon:
+        return "No location data available for this job.", 400
+
+    return render_template(
+        "job_detail.html",
+        employer=employer,
+        location_name=location_name,
+        lat=lat,
+        lon=lon,
+    )
+
 
 @app.route("/my_jobs", methods=["GET", "POST"])
 def my_jobs():

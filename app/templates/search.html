@@ -9,11 +9,12 @@ time spent: 0 hr
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
+    <title>Search Jobs</title>
+
     <link rel="stylesheet" href="../static/search.css"/>
     <link rel="stylesheet" href="../static/nav.css" />
 
-    <title>Search Jobs</title>
-    <h1>Search Jobs</h1>
     <style>
       textarea {
         flex: 1;
@@ -31,11 +32,44 @@ time spent: 0 hr
       </ul>
     </nav>
 
+    <h1>Search Jobs</h1>
+
+    {% if keyword is defined %}
+      <h2>
+        Results for "{{ keyword }}"
+        {% if location %} in "{{ location }}"{% endif %}
+      </h2>
+    {% else %}
+      <p>Use the search bar on the homepage to search for jobs.</p>
+    {% endif %}
+
+    {% if error is defined and error %}
+      <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    {% if employers is defined and employers %}
+      {% for employer, jobs in employers.items() %}
+        <h3>{{ employer }}</h3>
+        <ul>
+          {% for job in jobs %}
+            <li>
+              <!-- job[0] = location name; job[1]/[2] = lat/lon (for map later) -->
+              {{ job[0] }}
+              <br>
+                <a href="{{ url_for('job_detail',
+                                    employer=employer,
+                                    location_name=job[0],
+                                    lat=job[1],
+                                    lon=job[2]) }}">
+                  View details
+                </a>
+            </li>
+          {% endfor %}
+        </ul>
+        <hr>
+      {% endfor %}
+    {% elif keyword is defined %}
+      <p>No jobs found for that search.</p>
+    {% endif %}
   </body>
 </html>
-
-
-
-
-
-
