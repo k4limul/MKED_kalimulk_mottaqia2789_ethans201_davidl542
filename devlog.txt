@@ -33,3 +33,7 @@ davidL -- 2025-12-09 11:40
 mottaqiA -- 2025-12-10 1:25
 - added checks for api key files
 - removed redundant code
+
+mottaqiA -- 2025-12-11 23:38
+- created functioning search with code from ethan
+- created a small details page that marks location for each job listed
