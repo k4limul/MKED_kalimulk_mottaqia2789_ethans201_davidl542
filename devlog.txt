@@ -40,3 +40,7 @@ ethanS -- 2025-12-11 11:40
 mottaqiA -- 2025-12-11 23:38
 - created functioning search with code from ethan
 - created a small details page that marks location for each job listed
+
+davidL -- 2025-12-15 11:45
+- fixed up homepage
+- fixed fstrings conversion to sql injection-safe ? parameters for sqlite queries

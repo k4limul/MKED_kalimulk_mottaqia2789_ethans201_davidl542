@@ -4,7 +4,7 @@ MKED
 SoftDev 2025
 P01 -- ArRESTed Development
 2025-12-22
-Time spent: 0 hr
+Time spent: 2 hr
 '''
 from flask import Flask, request, session, redirect, url_for, render_template
 import csv
@@ -159,8 +159,7 @@ def register():
     email = request.form['email']
     password = request.form['password']
 
-    cmd = f"SELECT * FROM users WHERE username = '{username}'"
-    c.execute(cmd)
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
     existing_user = c.fetchone()
 
     if existing_user:
@@ -170,8 +169,10 @@ def register():
 
     creation_date = int(time.time())
 
-    cmd = f"INSERT into users VALUES ('{username}', '{email}', '{password}', '{creation_date}')"
-    c.execute(cmd)
+    c.execute(
+        "INSERT INTO users VALUES (?, ?, ?, ?)",
+        (username, email, password, creation_date)
+    )
     db.commit()
     db.close()
     session['username'] = username
@@ -240,7 +241,6 @@ def job_detail():
         lat=lat,
         lon=lon,
     )
-
 
 @app.route("/my_jobs", methods=["GET", "POST"])
 def my_jobs():
