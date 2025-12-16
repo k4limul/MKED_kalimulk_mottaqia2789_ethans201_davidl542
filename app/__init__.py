@@ -196,16 +196,28 @@ USAUPPERLONG=-66.93
 USALOWERLONG=-125.0
 
 def RISEJOBS():
-    url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
-    params = {
-        "limit": 5
-    }
-    response=requests.get(url, params=params)
+    url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20000&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
+    # params = {
+    #     "page":1,
+    #     "limit": 500000
+    # }
+    # response=requests.get(url, params=params)
+    response=requests.get(url)
     data=response.json()
+    count=0
     coords=[]
+    # print(data)
+    # print("/n/n/n/n")
+    # print(data["result"])
     for c in data["result"]["jobs"]:
-        if c["owner"]["locationCoordinates"] is not None:
-            coords=[[c["owner"]["locationCoordinates"]["Latitude"]],c["owner"]["locationCoordinates"]["Longitude"]]
+
+        count+=1
+        try:
+            if(c["locationCoordinates"] is not None):
+                coords.append(c["locationCoordinates"])
+        except KeyError:
+            print("remote job")
+    print(count)
     return coords
 
 print(RISEJOBS())
