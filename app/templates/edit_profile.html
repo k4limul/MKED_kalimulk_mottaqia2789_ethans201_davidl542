@@ -1,0 +1,43 @@
+<!--
+Kalimul Kaif, David Lee, Mottaqi Abedin, Ethan Salanha
+MKED
+SoftDev
+P01 -- ArRESTed Development
+2025-12-22
+time spent: 0.0 hr
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../static/homepage.css" />
+  <link rel="stylesheet" href="../static/nav.css" />
+
+    <title>My Profile</title>
+</head>
+<body>
+    <h1>My Profile</h1>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
+        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
+        <li><a href="{{ url_for('search') }}">Search</a></li>
+        <li><a href="{{ url_for('my_jobs') }}">My Jobs</a></li>
+        <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+      </ul>
+    </nav>
+
+    <p></p>
+    <form action="{{ url_for('edit_profile') }}" method="POST">
+      {% if bio %}
+        <label for="bio">Your Current Bio: </label>
+        {{ bio }}
+      {% else %}
+        <label for="bio">No Bio Currently Set </label>
+      {% endif %}
+      <hr>
+      <textarea id = "bio" name = "bio" rows = "6" cols = "60" placeholder="Write something new about yourself..." required> {% if bio %} {{ bio }} {% endif %}</textarea><br>
+      <input type="submit" value="Save Changes">
+    </form>
+    <hr>
+</body>
+</html>
