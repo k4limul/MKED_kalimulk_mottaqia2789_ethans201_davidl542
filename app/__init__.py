@@ -192,7 +192,7 @@ def profile():
     c = db.cursor()
     username = session['username']
 
-    c.execute(SELECT bio, creation_date from users WHERE username = ?", (username, ))
+    c.execute("SELECT bio, creation_date from users WHERE username = ?", (username, ))
     result = c.fetchone()
     bio = result[0] if result and result[0] else None
     creation_date = result[1] if result else None
@@ -220,13 +220,13 @@ def edit_profile():
   if request.method == "POST":
     bio = request.form.get("bio")
     if bio is not None:
-      c.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username0)
+      c.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username))
       db.commit()
     db.close() 
     return redirect(url_for('profile'))
 
   c.execute("SELECT bio FROM users WHERE username = ?", (username, ))
-  result = c.fetchone9)
+  result = c.fetchone()
   bio = result[0] if result and result[0] else None
 
   db.close()
