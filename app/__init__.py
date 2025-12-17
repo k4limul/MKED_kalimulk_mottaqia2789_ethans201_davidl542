@@ -166,10 +166,27 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         "ResultsPerPage": 50,
         "Keyword":keyword
     }
+    #Position Title
+# Apply Link
+# Location (lat, long)
+# Organization name
+# Position schedule (full time/part time, etc.)
+# Qualification summary
+# Position start and end date
+# Position Requirements [pull the entirety of details]
+
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
     employers = {}   # employer_name -> list of (location name, lat, lon)
-
+    link=""
+    location=""
+    lat=""
+    long=""
+    employer=""
+    schedule=""
+    start=""
+    end=""
+    requirements=""
     for job in data["SearchResult"]["SearchResultItems"]:
         descriptor = job["MatchedObjectDescriptor"]
 
@@ -197,15 +214,27 @@ USALOWERLONG=-125.0
 
 def RISEJOBS():
     url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20000&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
-    # params = {
-    #     "page":1,
-    #     "limit": 500000
-    # }
-    # response=requests.get(url, params=params)
-    response=requests.get(url)
+    params = {
+        "page":3,
+        "limit": 200,
+        "sortedBy":"New York"
+    }
+    response=requests.get(url, params=params)
+    #response=requests.get(url)
     data=response.json()
     count=0
     coords=[]
+    all=[]
+    loc=[]
+    link=""
+    location=""
+    lat=""
+    long=""
+    employer=""
+    schedule=""
+    start=""
+    end=""
+    requirements=""
     # print(data)
     # print("/n/n/n/n")
     # print(data["result"])
@@ -213,12 +242,19 @@ def RISEJOBS():
 
         count+=1
         try:
+            all.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
+            if(c["locationAddress"] is not None):
+                location=c["locationAddress"]
+                loc.append(location)
             if(c["locationCoordinates"] is not None):
                 coords.append(c["locationCoordinates"])
+                loc.append(coords)
+                all.append(loc)
+                loc=[]
         except KeyError:
             print("remote job")
     print(count)
-    return coords
+    return all
 
 print(RISEJOBS())
 
