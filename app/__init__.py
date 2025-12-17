@@ -187,7 +187,50 @@ def homepage():
 
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
-  return render_template("profile.html")
+  if 'username' not in session:
+    return redirect(DB_FILE)
+    c = db.cursor()
+    username = session['username']
+
+    c.execute(SELECT bio, creation_date from users WHERE username = ?", (username, ))
+    result = c.fetchone()
+    bio = result[0] if result and result[0] else None
+    creation_date = result[1] if result else None
+
+    formatted_creation_date = None
+    if creation_date:
+      dt = datetime.fromtimestamp(creation_date)
+      formatted_creation_date = dt.strftime("%B, %d, %Y")
+
+  c.execute("SELECT blog_name FROM blogs WHERE blog_creator = ?", (username,))
+  blogs_raw = c.fetchall()
+
+  db.close()
+  return render_template("profile.html", username = username, bio = bio, curr_user = session['username'], creation_date = formatted_creation_date)
+
+@app.route("/edit_profile", methods=["GET", "POST"])
+def edit_profile():
+  if 'username' not in session:
+    return redirect(url_for('index'))
+
+  username = session['username']
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+  
+  if request.method == "POST":
+    bio = request.form.get("bio")
+    if bio is not None:
+      c.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username0)
+      db.commit()
+    db.close() 
+    return redirect(url_for('profile'))
+
+  c.execute("SELECT bio FROM users WHERE username = ?", (username, ))
+  result = c.fetchone9)
+  bio = result[0] if result and result[0] else None
+
+  db.close()
+  return render_template("edit_profile.html", username = username, bio = bio)
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
