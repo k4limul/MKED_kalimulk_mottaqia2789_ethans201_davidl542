@@ -216,7 +216,7 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         # jobs[coords]=jobs[loc]
     jobslist.append(jobs)
     jobs={}
-    return joblist
+    return jobslist
 
 print(USAJOBS())
 
