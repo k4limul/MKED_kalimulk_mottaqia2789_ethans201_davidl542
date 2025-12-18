@@ -49,5 +49,8 @@ davidL -- 2025-12-17 11:08
 - made profile.html
 - made edit_profile.html
 
-ethanS -- 2025-12-11 11:20
+ethanS -- 2025-12-17 11:20
 - added better functionality to joinRISE API and card and pull req and stuff. also added basic framework to bring them up to production quality
+
+ethanS -- 2025-12-19 11:43
+- added the better framework for good production quality and integration into OPENSTREETMAP
