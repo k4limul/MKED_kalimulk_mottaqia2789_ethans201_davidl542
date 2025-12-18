@@ -181,6 +181,7 @@ def USAJOBS(keyword="Defense",location="Virginia"):
 
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
+    jobslist=[]
     jobs = {}   # employer_name -> list of (location name, lat, lon)
 
 
@@ -213,8 +214,9 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         #         lat = loc.get("Latitude")
         #         lon = loc.get("Longitude")
         # jobs[coords]=jobs[loc]
-
-    return jobs
+    jobslist.append(jobs)
+    jobs={}
+    return joblist
 
 print(USAJOBS())
 
