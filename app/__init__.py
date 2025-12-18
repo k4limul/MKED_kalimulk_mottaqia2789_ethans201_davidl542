@@ -153,6 +153,10 @@ def my_jobs():
 def logout():
   return render_template("login.html")
 
+USAUPPERLAT=49.38
+USALOWERLAT=24.40
+USAUPPERLONG=-66.93
+USALOWERLONG=-125.0
 
 def USAJOBS(keyword="Defense",location="Virginia"):
     url = "https://data.usajobs.gov/api/search"
@@ -177,40 +181,43 @@ def USAJOBS(keyword="Defense",location="Virginia"):
 
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
-    employers = {}   # employer_name -> list of (location name, lat, lon)
-    link=""
-    location=""
-    lat=""
-    long=""
-    employer=""
-    schedule=""
-    start=""
-    end=""
-    requirements=""
+    jobs = {}   # employer_name -> list of (location name, lat, lon)
+
+
+    requirements=[]
     for job in data["SearchResult"]["SearchResultItems"]:
         descriptor = job["MatchedObjectDescriptor"]
+        jobs.update({"employer":descriptor.get("OrganizationName")})
+        jobs.update({"locations":descriptor.get("PositionLocation", [])})
+        jobs.update({"schedule":descriptor.get("PositionSchedule")[0]})
+        jobs.update({"start":descriptor.get("PositionStartDate")})
+        jobs.update({"end":descriptor.get("PositionEndDate")})
+        # jobs["employer"] = descriptor.get("OrganizationName")
+        # jobs["link"]=descriptor.get("ApplyURL")
+        # jobs["locations"] = descriptor.get("PositionLocation", [])
+        # jobs["schedule"]= descriptor.get("PositionSchedule")["Name"]
+        # jobs["start"]=descriptor.get("PositionStartDate")
+        # jobs["end"]=descriptor.get("PositionEndDate")
 
-        employer = descriptor.get("OrganizationName")
-        locations = descriptor.get("PositionLocation", [])
+        ##
+        requirements.append(descriptor.get("UserArea")["Details"]["Education"])
+        requirements.append(descriptor.get("UserArea")["Details"]["Requirements"])
+        requirements.append(descriptor.get("UserArea")["Details"]["WhoMayApply"]["Name"])
+        # if job not in data:
+        #     jobs[job] = ""
 
-        if employer not in employers:
-            employers[employer] = []
+        # for loc in locations:
+        #     if loc is not None:
+        #         location = loc.get("LocationName")
+        #         lat = loc.get("Latitude")
+        #         lon = loc.get("Longitude")
+        # jobs[coords]=jobs[loc]
 
-        for loc in locations:
-            location = loc.get("LocationName")
-            lat = loc.get("Latitude")
-            lon = loc.get("Longitude")
+    return jobs
 
-            if location and lat is not None and lon is not None:
-                employers[employer].append((location, lat, lon))
-    return employers
+print(USAJOBS())
 
-#print(USAJOBS())
 
-USAUPPERLAT=49.38
-USALOWERLAT=24.40
-USAUPPERLONG=-66.93
-USALOWERLONG=-125.0
 
 def RISEJOBS():
     url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20000&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
@@ -239,7 +246,6 @@ def RISEJOBS():
     # print("/n/n/n/n")
     # print(data["result"])
     for c in data["result"]["jobs"]:
-
         count+=1
         try:
             all.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
@@ -247,7 +253,10 @@ def RISEJOBS():
                 location=c["locationAddress"]
                 loc.append(location)
             if(c["locationCoordinates"] is not None):
+                locCoord=c["locationCoordinates"]
                 coords.append(c["locationCoordinates"])
+                lat=locCoord["latitude"]
+                long=locCoord["longitude"]
                 loc.append(coords)
                 all.append(loc)
                 loc=[]
@@ -256,7 +265,7 @@ def RISEJOBS():
     print(count)
     return all
 
-print(RISEJOBS())
+#print(RISEJOBS())
 
 if __name__ == "__main__":
   initialize_db()
