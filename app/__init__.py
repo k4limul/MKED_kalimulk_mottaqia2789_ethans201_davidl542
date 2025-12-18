@@ -203,6 +203,7 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         requirements.append(descriptor.get("UserArea")["Details"]["Education"])
         requirements.append(descriptor.get("UserArea")["Details"]["Requirements"])
         requirements.append(descriptor.get("UserArea")["Details"]["WhoMayApply"]["Name"])
+        jobs.update({"requirements":requirements})
         # if job not in data:
         #     jobs[job] = ""
 
