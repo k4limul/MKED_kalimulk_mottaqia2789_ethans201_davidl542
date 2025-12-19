@@ -54,3 +54,6 @@ ethanS -- 2025-12-17 11:20
 
 ethanS -- 2025-12-19 11:43
 - added the better framework for good production quality and integration into OPENSTREETMAP
+
+mottaqiA -- 2025-12-19 11:43
+- fixed bug with register leading back to home and removed search from navbar
