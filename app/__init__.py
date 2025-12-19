@@ -113,7 +113,7 @@ def initialize_db():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
 
-  c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE);")
+  c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE, bio TEXT);")
   c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, state TEXT, city TEXT, job_title TEXT, avg_salary INTEGER, weather_condition TEXT, date_saved DATE);")
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
 
@@ -188,22 +188,20 @@ def homepage():
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
   if 'username' not in session:
-    return redirect(DB_FILE)
-    c = db.cursor()
-    username = session['username']
+    return redirect(url_for('index'))
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+  username = session['username']
 
-    c.execute("SELECT bio, creation_date from users WHERE username = ?", (username, ))
-    result = c.fetchone()
-    bio = result[0] if result and result[0] else None
-    creation_date = result[1] if result else None
+  c.execute("SELECT bio, creation_date from users WHERE username = ?;", (username, ))
+  result = c.fetchone()
+  bio = result[0] if result and result[0] else None
+  creation_date = result[1] if result else None
 
-    formatted_creation_date = None
-    if creation_date:
-      dt = datetime.fromtimestamp(creation_date)
-      formatted_creation_date = dt.strftime("%B, %d, %Y")
-
-  c.execute("SELECT blog_name FROM blogs WHERE blog_creator = ?", (username,))
-  blogs_raw = c.fetchall()
+  formatted_creation_date = None
+  if creation_date:
+    dt = datetime.fromtimestamp(creation_date)
+    formatted_creation_date = dt.strftime("%B, %d, %Y")
 
   db.close()
   return render_template("profile.html", username = username, bio = bio, curr_user = session['username'], creation_date = formatted_creation_date)
@@ -226,7 +224,8 @@ def edit_profile():
     return redirect(url_for('profile'))
 
   c.execute("SELECT bio FROM users WHERE username = ?", (username, ))
-  result = c.fetchone()
+  result = c.fetchall()
+  print(result)
   bio = result[0] if result and result[0] else None
 
   db.close()
