@@ -28,6 +28,18 @@
     <p><strong>Employer:</strong> {{ employer }}</p>
     <p><strong>Location:</strong> {{ location_name }}</p>
 
+    <form action="{{ url_for('save_job') }}" method="POST" style="margin: 20px 0;">
+      <input type="hidden" name="job_title" value="{{ job_title }}">
+      <input type="hidden" name="employer" value="{{ employer }}">
+      <input type="hidden" name="location_name" value="{{ location_name }}">
+      <input type="hidden" name="schedule" value="{{ schedule }}">
+      <input type="hidden" name="start_date" value="{{ start_date }}">
+      <input type="hidden" name="end_date" value="{{ end_date }}">
+      <input type="hidden" name="link" value="{{ link }}">
+      <input type="hidden" name="requirements" value="{{ requirements }}">
+      <button type="submit">Save This Job</button>
+    </form>
+
     <div id="map" style="height: 500px; width: 100%;"></div>
 
     <!-- leaflet js script -->

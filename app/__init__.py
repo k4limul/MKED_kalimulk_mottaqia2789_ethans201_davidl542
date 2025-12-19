@@ -52,7 +52,6 @@ def load_api_keys():
   print("API_KEYS loaded:", list(keys.keys()))
   return keys
 
-
 API_KEYS = load_api_keys()
 
 def get_api_key(name):
@@ -85,25 +84,27 @@ def USAJOBS(keyword, location):
     user_loc = (location or "").strip().lower()
 
     try:
-        for job in data["SearchResult"]["SearchResultItems"]:
-          descriptor = job["MatchedObjectDescriptor"]
-          employer = descriptor.get("OrganizationName", "Unknown Employer")
-          locations = descriptor.get("PositionLocation", [])
-          if employer not in employers:
-            employers[employer] = []
-          for loc in locations:
-            name = loc.get("LocationName")
-            lat = loc.get("Latitude")
-            lon = loc.get("Longitude")
-            if not name:
-              continue
-            if user_loc and user_loc not in name.lower():
-              continue
-            
-            if lat is not None and lon is not None:
-              employers[employer].append((name, lat, lon))
+      jobslist=[]
+      jobs = {}
+      requirements=[]
 
-        return employers, None
+      for job in data["SearchResult"]["SearchResultItems"]:
+          descriptor = job["MatchedObjectDescriptor"]
+          jobs.update({"employer":descriptor.get("OrganizationName")})
+          jobs.update({"locations":descriptor.get("PositionLocation", [])})
+          jobs.update({"schedule":descriptor.get("PositionSchedule")[0]})
+          jobs.update({"start":descriptor.get("PositionStartDate")})
+          jobs.update({"end":descriptor.get("PositionEndDate")})
+
+          ##
+          requirements.append(descriptor.get("UserArea")["Details"]["Education"])
+          requirements.append(descriptor.get("UserArea")["Details"]["Requirements"])
+          requirements.append(descriptor.get("UserArea")["Details"]["WhoMayApply"]["Name"])
+          jobs.update({"requirements":requirements})
+
+      jobslist.append(jobs)
+      jobs={}
+      return jobslist
 
     except Exception as e:
         print("Parsing error:", e)
@@ -112,9 +113,10 @@ def USAJOBS(keyword, location):
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
-
+  
   c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE);")
-  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, state TEXT, city TEXT, job_title TEXT, avg_salary INTEGER, weather_condition TEXT, date_saved DATE);")
+  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, requirements TEXT, date_saved DATE);")
+  # (job_id, username, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
 
   db.commit()
@@ -252,14 +254,13 @@ def search():
         db.commit()
         db.close()
 
-        employers, error = USAJOBS(keyword, location)
+        jobs = USAJOBS(keyword, location)
 
         return render_template(
             "search.html",
             keyword=keyword,
             location=location,
-            employers=employers,
-            error=error
+            jobs=jobs
         )
 
     return render_template("search.html")
@@ -269,29 +270,85 @@ def job_detail():
     if 'username' not in session:
         return redirect(url_for('index'))
 
-    employer = request.args.get("employer", "Unknown Employer")
-    location_name = request.args.get("location_name", "Unknown Location")
+    job_title = request.args.get("job_title", "")
+    employer = request.args.get("employer", "")
+    location_name = request.args.get("location_name", "")
     lat = request.args.get("lat")
     lon = request.args.get("lon")
+    schedule = request.args.get("schedule", "")
+    start_date = request.args.get("start_date", "")
+    end_date = request.args.get("end_date", "")
+    link = request.args.get("link", "")
+    requirements = request.args.get("requirements", "")
 
     if not lat or not lon:
         return "No location data available for this job.", 400
 
     return render_template(
         "job_detail.html",
+        job_title=job_title,
         employer=employer,
         location_name=location_name,
         lat=lat,
         lon=lon,
+        schedule=schedule,
+        start_date=start_date,
+        end_date=end_date,
+        link=link,
+        requirements=requirements
     )
 
 @app.route("/my_jobs", methods=["GET", "POST"])
 def my_jobs():
-  return render_template("my_jobs.html")
+  if 'username' not in session:
+    return redirect(url_for('index'))
+  
+  username = session['username']
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+
+  c.execute(
+    "SELECT * FROM saved_locations WHERE username = ? ORDER BY date_saved DESC",
+    (username)
+  )
+  saved_jobs = c.fetchall()
+  db.close()
+
+  return render_template("my_jobs.html", saved_jobs=saved_jobs)
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
   return render_template("login.html")
+
+@app.route("/save_job", methods=["GET", "POST"])
+def save_job():
+  if 'username' not in session:
+    return redirect(url_for('index'))
+  
+  username = session['username']
+  job_title = request.form.get("job_title")
+  employer = request.form.get("employer")
+  location_name = request.form.get("location_name")
+  schedule = request.form.get("schedule", "")
+  start_date = request.form.get("start_date", "")
+  end_date = request.form.get("end_date", "")
+  link = request.form.get("link", "")
+  requirements = request.form.get("requirements", "")
+
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+
+  job_id = str(time.time())
+  date_saved = int(time.time())
+
+  c.execute(
+        "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
+  )
+  db.commit()
+  db.close()
+
+  return redirect(url_for('my_jobs'))
 
 if __name__ == "__main__":
   initialize_db()
