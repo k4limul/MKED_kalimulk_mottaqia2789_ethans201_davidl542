@@ -13,10 +13,18 @@ time spent: 0 hr
     <link rel="stylesheet" href="../static/nav.css" />
 
     <title>My Jobs</title>
-    <h1>My Jobs</h1>
     <style>
       textarea {
         flex: 1;
+      }
+      .job-card {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 5px;
+      }
+      .job-card h3 {
+        margin-top: 0;
       }
     </style>
   </head>
@@ -30,6 +38,29 @@ time spent: 0 hr
         <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
       </ul>
     </nav>
+
+    <h1>My Saved Jobs</h1>
+
+    {% if saved_jobs %}
+      {% for job in saved_jobs %}
+        <div class="job-card">
+          <h3>{{ job[2] }}</h3>
+          <p><strong>Employer:</strong> {{ job[3] }}</p>
+          <p><strong>Location:</strong> {{ job[4] }}</p>
+          <p><strong>Schedule:</strong> {{ job[5] }}</p>
+          <p><strong>Start Date:</strong> {{ job[6] }}</p>
+          <p><strong>End Date:</strong> {{ job[7] }}</p>
+          {% if job[8] %}
+            <p><a href="{{ job[8] }}" target="_blank">Apply Here</a></p>
+          {% endif %}
+          {% if job[9] %}
+            <p><strong>Requirements:</strong> {{ job[9] }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No saved jobs yet. Start searching to save jobs!</p>
+    {% endif %}
 
   </body>
 </html>

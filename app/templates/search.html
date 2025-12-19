@@ -27,7 +27,6 @@ time spent: 0 hr
         <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
         <li><a href="{{ url_for('profile') }}">My Profile</a></li>
         <li><a href="{{ url_for('search') }}">Search</a></li>
-        <li><a href="{{ url_for('my_jobs') }}">My Jobs</a></li>
         <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
       </ul>
     </nav>
@@ -39,7 +38,7 @@ time spent: 0 hr
         Results for "{{ keyword }}"
         {% if location %} in "{{ location }}"{% endif %}
       </h2>
-    {% else %}
+    {% else %} 
       <p>Use the search bar on the homepage to search for jobs.</p>
     {% endif %}
 
@@ -47,22 +46,27 @@ time spent: 0 hr
       <p style="color:red;">{{ error }}</p>
     {% endif %}
 
-    {% if employers is defined and employers %}
-      {% for employer, jobs in employers.items() %}
-        <h3>{{ employer }}</h3>
+    {% if jobs is defined and jobs %}
+      {% for job in jobs %}
+        <h3>{{ job['employer'] }}</h3>
         <ul>
-          {% for job in jobs %}
+          {% for location in job['locations'] %}
             <li>
-              <!-- job[0] = location name; job[1]/[2] = lat/lon (for map later) -->
-              {{ job[0] }}
+              {{ location.get('LocationName', 'Unknown') }}
               <br>
-                <a href="{{ url_for('job_detail',
-                                    employer=employer,
-                                    location_name=job[0],
-                                    lat=job[1],
-                                    lon=job[2]) }}">
-                  View details
-                </a>
+              <a href="{{ url_for('job_detail',
+                                  job_title=keyword,
+                                  employer=job['employer'],
+                                  location_name=location.get('LocationName'),
+                                  lat=location.get('Latitude'),
+                                  lon=location.get('Longitude'),
+                                  schedule=job.get('schedule', {}).get('Name', ''),
+                                  start_date=job.get('start', ''),
+                                  end_date=job.get('end', ''),
+                                  link=job.get('link', ''),
+                                  requirements='|'.join(job.get('requirements', []))) }}">
+                View details
+              </a>
             </li>
           {% endfor %}
         </ul>
@@ -71,5 +75,6 @@ time spent: 0 hr
     {% elif keyword is defined %}
       <p>No jobs found for that search.</p>
     {% endif %}
+
   </body>
 </html>

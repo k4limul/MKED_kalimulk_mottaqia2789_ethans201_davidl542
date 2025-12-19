@@ -29,7 +29,7 @@ time spent: 0.5 hr
     {% endif %}
 
     <p>Thank you for your interest in using the LiveMKED job search platform! To get started, register an account with us with valid credentials.</p>
-
++
     <form action="{{ url_for('register') }}" method="POST">
         <label class="text-center">Username</label>
         <input type="text" name="username" required>
@@ -47,6 +47,6 @@ time spent: 0.5 hr
     </form>
 
     <br>
-    <p>Already have an account? <a href="{{ url_for('index') }}">Login Here</a></p>
+    <p>Already have an account? <a href="{{ url_for('login') }}">Login Here</a></p>
 </body>
 </html>
