@@ -182,17 +182,18 @@ def USAJOBS(keyword="Defense",location="Virginia"):
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
     jobslist=[]
-    jobs = {}   # employer_name -> list of (location name, lat, lon)
-
-
+    jobdata = {}   # employer_name -> list of (location name, lat, lon)
+    deets=[]
+    alldeets=[]
+    print(len(data["SearchResult"]["SearchResultItems"]))
     requirements=[]
     for job in data["SearchResult"]["SearchResultItems"]:
         descriptor = job["MatchedObjectDescriptor"]
-        jobs.update({"employer":descriptor.get("OrganizationName")})
-        jobs.update({"locations":descriptor.get("PositionLocation", [])})
-        jobs.update({"schedule":descriptor.get("PositionSchedule")[0]})
-        jobs.update({"start":descriptor.get("PositionStartDate")})
-        jobs.update({"end":descriptor.get("PositionEndDate")})
+        jobdata.update({"employer":descriptor.get("OrganizationName")})
+        jobdata.update({"locations":descriptor.get("PositionLocation", [])})
+        jobdata.update({"schedule":descriptor.get("PositionSchedule")[0]})
+        jobdata.update({"start":descriptor.get("PositionStartDate")})
+        jobdata.update({"end":descriptor.get("PositionEndDate")})
         # jobs["employer"] = descriptor.get("OrganizationName")
         # jobs["link"]=descriptor.get("ApplyURL")
         # jobs["locations"] = descriptor.get("PositionLocation", [])
@@ -200,11 +201,15 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         # jobs["start"]=descriptor.get("PositionStartDate")
         # jobs["end"]=descriptor.get("PositionEndDate")
 
-        ##
-        requirements.append(descriptor.get("UserArea")["Details"]["Education"])
-        requirements.append(descriptor.get("UserArea")["Details"]["Requirements"])
-        requirements.append(descriptor.get("UserArea")["Details"]["WhoMayApply"]["Name"])
-        jobs.update({"requirements":requirements})
+        t=descriptor.get("UserArea")["Details"]["Education"]
+        #deets.append(t)
+        #deets.append(descriptor.get("UserArea")["Details"]["Requirements"])
+        r=descriptor.get("UserArea")["Details"]["Requirements"]
+
+        deets.append(r)
+        #deets.append(descriptor.get("UserArea")["Details"]["WhoMayApply"]["Name"])
+
+
         # if job not in data:
         #     jobs[job] = ""
 
@@ -214,11 +219,15 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         #         lat = loc.get("Latitude")
         #         lon = loc.get("Longitude")
         # jobs[coords]=jobs[loc]
-    jobslist.append(jobs)
-    jobs={}
-    return jobslist
-
+    jobslist.append((jobdata,deets))
+    alldeets.append(deets)
+    jobdata={}
+    deets=[]
+    return alldeets
+#    return jobslist
 print(USAJOBS())
+USAJOBS()
+#print(USAJOBS()[0][1][0])
 
 
 
