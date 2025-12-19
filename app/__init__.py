@@ -114,7 +114,7 @@ def initialize_db():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
 
-  c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE);")
+  c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE, bio TEXT);")
   c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, requirements TEXT, date_saved DATE);")
   # (job_id, username, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
@@ -142,7 +142,6 @@ def login():
     db.close()
 
     if user == None or user[0] != username or user[2] != password:
-      print("Entered username/password do not match our records")
       text = "Login failed, create new acc?"
       return render_template('login.html', text=text)
     elif user[0] == username and user[2] == password:
@@ -166,14 +165,14 @@ def register():
 
     if existing_user:
       db.close()
-      text = "username already taken, try another one!"
+      text = "This username already taken, try another one!"
       return render_template('register.html', text = text)
 
     creation_date = int(time.time())
 
     c.execute(
-        "INSERT INTO users VALUES (?, ?, ?, ?)",
-        (username, email, password, creation_date)
+        "INSERT INTO users VALUES (?, ?, ?, ?, ?)",
+        (username, email, password, creation_date, '')
     )
     db.commit()
     db.close()
@@ -203,7 +202,7 @@ def profile():
   formatted_creation_date = None
   if creation_date:
     dt = datetime.fromtimestamp(creation_date)
-    formatted_creation_date = dt.strftime("%B, %d, %Y")
+    formatted_creation_date = dt.strftime("%B %d, %Y")
 
   db.close()
   return render_template("profile.html", username = username, bio = bio, curr_user = session['username'], creation_date = formatted_creation_date)
@@ -219,6 +218,7 @@ def edit_profile():
   
   if request.method == "POST":
     bio = request.form.get("bio")
+    bio = bio.strip()
     if bio is not None:
       c.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username))
       db.commit()
@@ -226,8 +226,7 @@ def edit_profile():
     return redirect(url_for('profile'))
 
   c.execute("SELECT bio FROM users WHERE username = ?", (username, ))
-  result = c.fetchall()
-  print(result)
+  result = c.fetchone()
   bio = result[0] if result and result[0] else None
 
   db.close()

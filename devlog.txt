@@ -52,8 +52,14 @@ davidL -- 2025-12-17 11:08
 ethanS -- 2025-12-17 11:20
 - added better functionality to joinRISE API and card and pull req and stuff. also added basic framework to bring them up to production quality
 
-ethanS -- 2025-12-19 11:43
+ethanS -- 2025-12-18 11:43
 - added the better framework for good production quality and integration into OPENSTREETMAP
 
-mottaqiA -- 2025-12-19 11:43
+mottaqiA -- 2025-12-18 11:43
 - fixed bug with register leading back to home and removed search from navbar
+
+davidL -- 2025-12-19 11:44
+- fixed login-database relationship (recognizes existing user)
+- fixed profile saving
+- fixed datetime display
+
