@@ -38,7 +38,7 @@ time spent: 0 hr
         Results for "{{ keyword }}"
         {% if location %} in "{{ location }}"{% endif %}
       </h2>
-    {% else %}
+    {% else %} 
       <p>Use the search bar on the homepage to search for jobs.</p>
     {% endif %}
 
@@ -48,24 +48,28 @@ time spent: 0 hr
 
     {% if employers is defined and employers %}
       {% for employer, jobs in employers.items() %}
-        <h3>{{ employer }}</h3>
-        <ul>
-          {% for job in jobs %}
-            <li>
-              <!-- job[0] = location name; job[1]/[2] = lat/lon (for map later) -->
-              {{ job[0] }}
-              <br>
-                <a href="{{ url_for('job_detail',
-                                    employer=employer,
-                                    location_name=job[0],
-                                    lat=job[1],
-                                    lon=job[2]) }}">
-                  View details
-                </a>
-            </li>
-          {% endfor %}
-        </ul>
-        <hr>
+        {% if jobs|length > 0 %}
+          <h3>{{ employer }}</h3>
+          <ul>
+            {% for job in jobs %}
+              <li>
+                <!-- job[0] = location name; job[1]/[2] = lat/lon (for map later) -->
+                {{ job[0] }}
+                <br>
+                  <a href="{{ url_for('job_detail',
+                                      employer=employer,
+                                      location_name=job[0],
+                                      lat=job[1],
+                                      lon=job[2]) }}">
+                    View details
+                  </a>
+              </li>
+            {% endfor %}
+          </ul>
+          <hr>
+        {% else %}
+          <p>No results found for this search. Check that your job or location exists and try again.</p>
+        {% endif %}
       {% endfor %}
     {% elif keyword is defined %}
       <p>No jobs found for that search.</p>
