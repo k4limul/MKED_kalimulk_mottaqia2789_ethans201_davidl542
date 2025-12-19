@@ -113,11 +113,11 @@ def USAJOBS(keyword, location):
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
+
   c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE);")
   c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, requirements TEXT, date_saved DATE);")
   # (job_id, username, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
-
   db.commit()
   db.close()
 
@@ -138,13 +138,14 @@ def login():
     c = db.cursor()
     c.execute("SELECT * FROM users WHERE username = ?", (username,))
     user = c.fetchone()
+    print(user)
     db.close()
 
-    if user == None or user[0] != username or user[1] != password:
-      print("username/password do not match our records")
-      text = "login failed, create new acc?"
+    if user == None or user[0] != username or user[2] != password:
+      print("Entered username/password do not match our records")
+      text = "Login failed, create new acc?"
       return render_template('login.html', text=text)
-    elif user[0] == username and user[1] == password:
+    elif user[0] == username and user[2] == password:
       session['username'] = username
       return redirect(url_for('homepage'))
     else:
