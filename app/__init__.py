@@ -183,10 +183,6 @@ def USAJOBS(keyword="Defense",location="Virginia"):
     data = response.json()
     jobslist=[]
     jobdata = {}   # employer_name -> list of (location name, lat, lon)
-    deets=[]
-    alldeets=[]
-    print(len(data["SearchResult"]["SearchResultItems"]))
-    requirements=[]
     for job in data["SearchResult"]["SearchResultItems"]:
         descriptor = job["MatchedObjectDescriptor"]
         jobdata.update({"employer":descriptor.get("OrganizationName")})
@@ -195,19 +191,18 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         jobdata.update({"start":descriptor.get("PositionStartDate")})
         jobdata.update({"end":descriptor.get("PositionEndDate")})
         jobdata.update({"link":descriptor.get("ApplyURI")})
-        # jobs["employer"] = descriptor.get("OrganizationName")
-        # jobs["link"]=descriptor.get("ApplyURL")
-        # jobs["locations"] = descriptor.get("PositionLocation", [])
-        # jobs["schedule"]= descriptor.get("PositionSchedule")["Name"]
-        # jobs["start"]=descriptor.get("PositionStartDate")
-        # jobs["end"]=descriptor.get("PositionEndDate")
+        jobdata.update({"salary":descriptor.get("PositionRemuneration")})
+        #print(data["SearchResult"].keys())
+       
+        print(descriptor["PositionRemuneration"])
         jobslist.append(jobdata)
         
         jobdata={}
     return jobslist
-print(USAJOBS())
+#print(USAJOBS())
 USAJOBS()
-#print(USAJOBS()[0][1][0])
+
+
 
 
 
@@ -216,14 +211,15 @@ def RISEJOBS():
     params = {
         "page":3,
         "limit": 200,
-        "sortedBy":"New York"
+        "sortedBy":"United States of America"
     }
+    jobslist=[]
+    jobdata = {}   # employer_name -> list of (location name, lat, lon)
     response=requests.get(url, params=params)
-    #response=requests.get(url)
     data=response.json()
     count=0
     coords=[]
-    all=[]
+    jobdata=[]
     loc=[]
     link=""
     location=""
@@ -239,8 +235,9 @@ def RISEJOBS():
     # print(data["result"])
     for c in data["result"]["jobs"]:
         count+=1
+        owner=c["Owner"]
         try:
-            all.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
+            #jobdata.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
             if(c["locationAddress"] is not None):
                 location=c["locationAddress"]
                 loc.append(location)
@@ -250,12 +247,18 @@ def RISEJOBS():
                 lat=locCoord["latitude"]
                 long=locCoord["longitude"]
                 loc.append(coords)
-                all.append(loc)
-                loc=[]
         except KeyError:
-            print("remote job")
+            loc.append("Remote Job")
+        jobdata.update({"employer":owner.get("companyName")})
+        jobdata.update({"locations":loc})
+        loc=[]
+        jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
+        jobdata.update({"start":owner.get("PositionStartDate")})
+        jobdata.update({"end":owner.get("PositionEndDate")})
+        jobdata.update({"link":owner.get("ApplyURI")})
+        jobslist.append(jobdata)
     print(count)
-    return all
+    return jobdata
 
 #print(RISEJOBS())
 
