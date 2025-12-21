@@ -6,49 +6,37 @@ P01 -- ArRESTed Development
 2025-11-22
 Time spent: 0.5h
 -->
-<!doctype html>
-<html>
-<head>
-  <link rel="stylesheet" href ="../static/profile.css" />
-  <link rel="stylesheet" href="../static/nav.css" />
-</head>
+{% extends "base.html" %}
 
-<body>
-  {%if curr_user == username %}
-    <h1> My Profile </h1>
-  {% else %}
-    <h1> {{username}}'s Profile</h1>
-  {% endif %}
+{% block title %}Profile{% endblock %}
 
-  <nav>
-    <ul class="nav-links">
-      <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
-      <li><a href="{{ url_for('profile') }}">My Profile</a></li>
-      <li><a href="{{ url_for('my_jobs') }}">My Jobs</a></li>
-      <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-    </ul>
-  </nav>
+{% block content %}
+{%if curr_user == username %}
+  <h1 class="text-3xl font-bold mb-4">My Profile</h1>
+{% else %}
+  <h1 class="text-3xl font-bold mb-4">{{username}}'s Profile</h1>
+{% endif %}
 
-  {% if curr_user == username %}
-    <h3>My Bio!</h3>
-  {% else %}
-    <h3>{{username}}'s Bio!</h3>
-  {% endif %}
-  {% if creation_date %}
-    <p><em>Member since {{ creation_date }}</em></p>
-  {% endif %}
+{% if curr_user == username %}
+  <h3 class="text-xl font-semibold mb-2">My Bio!</h3>
+{% else %}
+  <h3 class="text-xl font-semibold mb-2">{{username}}'s Bio!</h3>
+{% endif %}
+{% if creation_date %}
+  <p class="italic mb-3"><em>Member since {{ creation_date }}</em></p>
+{% endif %}
 
-  <hr>
-  {% if bio %}
-    <p>{{ bio }}</p>
-  {% else %}
-    <p>No bio posted yet!</p>
-  {% endif %}
+<hr class="mb-3">
+{% if bio %}
+  <p class="mb-4">{{ bio }}</p>
+{% else %}
+  <p class="mb-4">No bio posted yet!</p>
+{% endif %}
 
-  {% if curr_user == username %}
-    <form action="{{ url_for('edit_profile') }}" method="GET">
-      <button type="submit">Edit Bio</button>
-    </form>
-  {% endif %}
-  <hr>
-</html>
+{% if curr_user == username %}
+  <form action="{{ url_for('edit_profile') }}" method="GET">
+    <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium">Edit Bio</button>
+  </form>
+{% endif %}
+<hr class="mt-4">
+{% endblock %}

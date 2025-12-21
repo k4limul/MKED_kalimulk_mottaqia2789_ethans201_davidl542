@@ -6,95 +6,73 @@ P01 - ArRESTed Development
 2025-12-22
 time spent: 0 hr
 -->
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Search Jobs</title>
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="../static/search.css"/>
-    <link rel="stylesheet" href="../static/nav.css" />
+{% block title %}Search Jobs{% endblock %}
 
-    <style>
-      textarea {
-        flex: 1;
-      }
-    </style>
-  </head>
-  <body>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
-        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
-        <li><a href="{{ url_for('search') }}">Search</a></li>
-        <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">Search Jobs</h1>
+
+{% if keyword is defined %}
+  <h2 class="text-2xl font-bold mb-4">
+    Results for "{{ keyword }}"
+    {% if location %} in "{{ location }}"{% endif %}
+  </h2>
+{% else %}
+  <p>Use the search bar on the homepage to search for jobs.</p>
+{% endif %}
+
+{% if error is defined and error %}
+  <p class="text-red-600 mb-3">{{ error }}</p>
+{% endif %}
+
+{% if jobs is defined and jobs %}
+  {% for job in jobs %}
+    <div class="job-card">
+      <h3 class="text-xl font-bold">{{ job.get('job_title', 'Unknown Position') }}</h3>
+      <h4 class="text-lg font-semibold text-gray-700">{{ job.get('employer', 'Unknown Employer') }}</h4>
+
+      {% if job.get('schedule') %}
+        <p><strong>Schedule:</strong> {{ job['schedule'] }}</p>
+      {% endif %}
+
+      {% if job.get('start') %}
+        <p><strong>Start Date:</strong> {{ job['start'] }}</p>
+      {% endif %}
+
+      {% if job.get('end') %}
+        <p><strong>End Date:</strong> {{ job['end'] }}</p>
+      {% endif %}
+
+      <h5>Locations:</h5>
+      <ul>
+        {% for loc in job.get('locations', []) %}
+          <li class="location-info">
+            <span class="location-name">
+              {{ loc.get('LocationName') or loc.get('CityName') or 'Location not specified' }}
+            </span>
+
+            <br>
+            <a href="{{ url_for('job_detail',
+                                job_title=job.get('job_title',''),
+                                employer=job.get('employer',''),
+                                location_name=loc.get('LocationName', loc.get('CityName', '')),
+                                lat=loc.get('Latitude', ''),
+                                lon=loc.get('Longitude', ''),
+                                schedule=job.get('schedule',''),
+                                start_date=job.get('start',''),
+                                end_date=job.get('end',''),
+                                link=job.get('link',''),
+                                requirements='|'.join(job.get('requirements', []))) }}">
+              View details
+            </a>
+          </li>
+        {% endfor %}
       </ul>
-    </nav>
-
-    <h1>Search Jobs</h1>
-
-    {% if keyword is defined %}
-      <h2>
-        Results for "{{ keyword }}"
-        {% if location %} in "{{ location }}"{% endif %}
-      </h2>
-    {% else %} 
-      <p>Use the search bar on the homepage to search for jobs.</p>
-    {% endif %}
-
-    {% if error is defined and error %}
-      <p style="color:red;">{{ error }}</p>
-    {% endif %}
-
-    {% if jobs is defined and jobs %}
-      {% for job in jobs %}
-        <div class="job-card">
-          <h3>{{ job.get('job_title', 'Unknown Position') }}</h3>
-          <h4>{{ job.get('employer', 'Unknown Employer') }}</h4>
-          
-          {% if job.get('schedule') %}
-            <p><strong>Schedule:</strong> {{ job['schedule'] }}</p>
-          {% endif %}
-          
-          {% if job.get('start') %}
-            <p><strong>Start Date:</strong> {{ job['start'] }}</p>
-          {% endif %}
-
-          {% if job.get('end') %}
-            <p><strong>End Date:</strong> {{ job['end'] }}</p>
-          {% endif %}
-          
-          <h5>Locations:</h5>
-          <ul>
-            {% for loc in job.get('locations', []) %}
-              <li class="location-info">
-                <span class="location-name">
-                  {{ loc.get('LocationName') or loc.get('CityName') or 'Location not specified' }}
-                </span>
-                
-                <br>
-                <a href="{{ url_for('job_detail',
-                                    job_title=job.get('job_title',''),
-                                    employer=job.get('employer',''),
-                                    location_name=loc.get('LocationName', loc.get('CityName', '')),
-                                    lat=loc.get('Latitude', ''),
-                                    lon=loc.get('Longitude', ''),
-                                    schedule=job.get('schedule',''),
-                                    start_date=job.get('start',''),
-                                    end_date=job.get('end',''),
-                                    link=job.get('link',''),
-                                    requirements='|'.join(job.get('requirements', []))) }}">
-                  View details
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-        <hr>
-      {% endfor %}
-    {% elif keyword is defined %}
-      <p>No jobs found for that search.</p>
-    {% endif %}
-
-  </body>
-</html>
+    </div>
+    <hr>
+  {% endfor %}
+{% elif keyword is defined %}
+  <p>No jobs found for that search.</p>
+{% endif %}
+{% endblock %}

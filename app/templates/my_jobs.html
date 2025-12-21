@@ -6,61 +6,48 @@ P01 - ArRESTed Development
 2025-12-22
 time spent: 0 hr
 -->
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" href="../static/my_jobs.css"/>
-    <link rel="stylesheet" href="../static/nav.css" />
+{% extends "base.html" %}
 
-    <title>My Jobs</title>
-    <style>
-      textarea {
-        flex: 1;
-      }
-      .job-card {
-        border: 1px solid #ddd;
-        padding: 15px;
-        margin: 15px 0;
-        border-radius: 5px;
-      }
-      .job-card h3 {
-        margin-top: 0;
-      }
-    </style>
-  </head>
-  <body>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
-        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
-        <li><a href="{{ url_for('search') }}">Search</a></li>
-        <li><a href="{{ url_for('my_jobs') }}">My Jobs</a></li>
-        <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-      </ul>
-    </nav>
+{% block title %}My Jobs{% endblock %}
 
-    <h1>My Saved Jobs</h1>
+{% block extra_head %}
+<style>
+  textarea {
+    flex: 1;
+  }
+  .job-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+  }
+  .job-card h3 {
+    margin-top: 0;
+  }
+</style>
+{% endblock %}
 
-    {% if saved_jobs %}
-      {% for job in saved_jobs %}
-        <div class="job-card">
-          <h3>{{ job[2] }}</h3>
-          <p><strong>Employer:</strong> {{ job[3] }}</p>
-          <p><strong>Location:</strong> {{ job[4] }}</p>
-          <p><strong>Schedule:</strong> {{ job[5] }}</p>
-          <p><strong>Start Date:</strong> {{ job[6] }}</p>
-          <p><strong>End Date:</strong> {{ job[7] }}</p>
-          {% if job[8] %}
-            <p><a href="{{ job[8] }}" target="_blank">Apply Here</a></p>
-          {% endif %}
-          {% if job[9] %}
-            <p><strong>Requirements:</strong> {{ job[9] }}</p>
-          {% endif %}
-        </div>
-      {% endfor %}
-    {% else %}
-      <p>No saved jobs yet. Start searching to save jobs!</p>
-    {% endif %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">My Saved Jobs</h1>
 
-  </body>
-</html>
+{% if saved_jobs %}
+  {% for job in saved_jobs %}
+    <div class="job-card">
+      <h3 class="text-xl font-bold">{{ job[2] }}</h3>
+      <p><strong>Employer:</strong> {{ job[3] }}</p>
+      <p><strong>Location:</strong> {{ job[4] }}</p>
+      <p><strong>Schedule:</strong> {{ job[5] }}</p>
+      <p><strong>Start Date:</strong> {{ job[6] }}</p>
+      <p><strong>End Date:</strong> {{ job[7] }}</p>
+      {% if job[8] %}
+        <p><a href="{{ job[8] }}" target="_blank">Apply Here</a></p>
+      {% endif %}
+      {% if job[9] %}
+        <p><strong>Requirements:</strong> {{ job[9] }}</p>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% else %}
+  <p>No saved jobs yet. Start searching to save jobs!</p>
+{% endif %}
+{% endblock %}

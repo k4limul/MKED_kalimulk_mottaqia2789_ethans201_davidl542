@@ -6,47 +6,35 @@ P01 -- ArRESTed Development
 2025-12-22
 time spent: 0.5 hr
 -->
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <style type="text/tailwindcss">
-    @theme {
+{% extends "base.html" %}
 
-    }
-  </style>
-  <link rel="stylesheet" href="../static/register.css" />
+{% block title %}LiveMKED Register{% endblock %}
 
-    <title>LiveMKED Register</title>
-</head>
-<body>
-    <h1>Create an Account with LiveMKED</h1>
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">Create an Account with LiveMKED</h1>
 
-    {% if text %}
-        <p style="color: red;">{{ text }}</p>
-    {% endif %}
+{% if text %}
+    <p class="text-red-600 mb-3">{{ text }}</p>
+{% endif %}
 
-    <p>Thank you for your interest in using the LiveMKED job search platform! To get started, register an account with us with valid credentials.</p>
-+
-    <form action="{{ url_for('register') }}" method="POST">
-        <label class="text-center">Username</label>
-        <input type="text" name="username" required>
-        <br><br>
+<p class="mb-4">Thank you for your interest in using the LiveMKED job search platform! To get started, register an account with us with valid credentials.</p>
 
-        <label class="text-center">Email</label>
-        <input for="email" name="email" required>
-        <br><br>
-
-        <label class="text-center">Password</label>
-        <input type="password" name="password" required>
-        <br><br>
-
-        <button class="cursor-pointer py-2 px-4 block mt-6 bg-indigo-500 text-white font-bold w-full text-center rounded type="submit">Register</button>
-    </form>
-
+<form action="{{ url_for('register') }}" method="POST">
+    <label class="font-medium">Username</label><br>
+    <input type="text" name="username" required class="border border-gray-300 rounded px-3 py-2 mt-1 mb-3">
     <br>
-    <p>Already have an account? <a href="{{ url_for('login') }}">Login Here</a></p>
-</body>
-</html>
+
+    <label class="font-medium">Email</label><br>
+    <input type="email" name="email" required class="border border-gray-300 rounded px-3 py-2 mt-1 mb-3">
+    <br>
+
+    <label class="font-medium">Password</label><br>
+    <input type="password" name="password" required class="border border-gray-300 rounded px-3 py-2 mt-1 mb-3">
+    <br>
+
+    <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium mt-2">Register</button>
+</form>
+
+<br>
+<p>Already have an account? <a href="{{ url_for('login') }}" class="text-amber-700 hover:underline">Login Here</a></p>
+{% endblock %}

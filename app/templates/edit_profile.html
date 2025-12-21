@@ -6,37 +6,23 @@ P01 -- ArRESTed Development
 2025-12-22
 time spent: 0.5h
 -->
-<!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="../static/homepage.css" />
-  <link rel="stylesheet" href="../static/nav.css" />
+{% extends "base.html" %}
 
-    <title>My Profile</title>
-</head>
-<body>
-    <h1>My Profile</h1>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
-        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
-        <li><a href="{{ url_for('my_jobs') }}">My Jobs</a></li>
-        <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-      </ul>
-    </nav>
+{% block title %}My Profile{% endblock %}
 
-    <p></p>
-    <form action="{{ url_for('edit_profile') }}" method="POST">
-      {% if bio %}
-        <label for="bio">Your Current Bio: </label>
-        {{ bio }}
-      {% else %}
-        <label for="bio">No Bio Currently Set </label>
-      {% endif %}
-      <hr>
-      <textarea id = "bio" name = "bio" rows = "6" cols = "60" placeholder="Write something new about yourself..." required> {% if bio %} {{ bio }} {% endif %}</textarea><br>
-      <input type="submit" value="Save Changes">
-    </form>
-    <hr>
-</body>
-</html>
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">My Profile</h1>
+
+<form action="{{ url_for('edit_profile') }}" method="POST">
+  {% if bio %}
+    <label for="bio" class="font-medium">Your Current Bio: </label>
+    <p class="mb-3">{{ bio }}</p>
+  {% else %}
+    <label for="bio" class="font-medium">No Bio Currently Set</label>
+  {% endif %}
+  <hr class="mb-4">
+  <textarea id="bio" name="bio" rows="6" cols="60" placeholder="Write something new about yourself..." required class="border border-gray-300 rounded px-3 py-2 w-full">{% if bio %}{{ bio }}{% endif %}</textarea><br>
+  <input type="submit" value="Save Changes" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium mt-3">
+</form>
+<hr class="mt-4">
+{% endblock %}

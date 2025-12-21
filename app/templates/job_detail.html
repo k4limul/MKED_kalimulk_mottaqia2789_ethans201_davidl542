@@ -1,69 +1,57 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Job Location</title>
+{% extends "base.html" %}
 
-    <link rel="stylesheet" href="../static/nav.css" />
+{% block title %}Job Location{% endblock %}
 
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-  </head>
-  <body>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="{{ url_for('homepage') }}">Home Page</a></li>
-        <li><a href="{{ url_for('profile') }}">My Profile</a></li>
-        <li><a href="{{ url_for('search') }}">Search</a></li>
-        <li><a href="{{ url_for('my_jobs') }}">My Jobs</a></li>
-        <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
-      </ul>
-    </nav>
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+{% endblock %}
 
-    <h1>Job Location</h1>
-    <p><strong>Employer:</strong> {{ employer }}</p>
-    <p><strong>Location:</strong> {{ location_name }}</p>
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">Job Location</h1>
+<p class="mb-2"><strong>Employer:</strong> {{ employer }}</p>
+<p class="mb-4"><strong>Location:</strong> {{ location_name }}</p>
 
-    <form action="{{ url_for('save_job') }}" method="POST" style="margin: 20px 0;">
-      <input type="hidden" name="job_title" value="{{ job_title }}">
-      <input type="hidden" name="employer" value="{{ employer }}">
-      <input type="hidden" name="location_name" value="{{ location_name }}">
-      <input type="hidden" name="schedule" value="{{ schedule }}">
-      <input type="hidden" name="start_date" value="{{ start_date }}">
-      <input type="hidden" name="end_date" value="{{ end_date }}">
-      <input type="hidden" name="link" value="{{ link }}">
-      <input type="hidden" name="requirements" value="{{ requirements }}">
-      <button type="submit">Save This Job</button>
-    </form>
+<form action="{{ url_for('save_job') }}" method="POST" class="mb-5">
+  <input type="hidden" name="job_title" value="{{ job_title }}">
+  <input type="hidden" name="employer" value="{{ employer }}">
+  <input type="hidden" name="location_name" value="{{ location_name }}">
+  <input type="hidden" name="schedule" value="{{ schedule }}">
+  <input type="hidden" name="start_date" value="{{ start_date }}">
+  <input type="hidden" name="end_date" value="{{ end_date }}">
+  <input type="hidden" name="link" value="{{ link }}">
+  <input type="hidden" name="requirements" value="{{ requirements }}">
+  <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium">Save This Job</button>
+</form>
 
-    <div id="map" style="height: 500px; width: 100%;"></div>
+<div id="map" style="height: 500px; width: 100%;"></div>
+{% endblock %}
 
-    <!-- leaflet js script -->
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
+{% block extra_scripts %}
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
 
-    <script>
-      const lat = parseFloat({{ lat | tojson }});
-      const lon = parseFloat({{ lon | tojson }});
+<script>
+  const lat = parseFloat({{ lat | tojson }});
+  const lon = parseFloat({{ lon | tojson }});
 
-      const map = L.map("map").setView([lat, lon], 12);
+  const map = L.map("map").setView([lat, lon], 12);
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
-      }).addTo(map);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
 
-      L.marker([lat, lon])
-        .addTo(map)
-        .bindPopup(`<strong>{{ employer|e }}</strong><br>{{ location_name|e }}`)
-        .openPopup();
-    </script>
-  </body>
-</html>
+  L.marker([lat, lon])
+    .addTo(map)
+    .bindPopup(`<strong>{{ employer|e }}</strong><br>{{ location_name|e }}`)
+    .openPopup();
+</script>
+{% endblock %}
