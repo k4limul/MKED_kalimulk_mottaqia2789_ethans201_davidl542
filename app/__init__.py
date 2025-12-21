@@ -29,7 +29,7 @@ def load_api_keys():
     return keys
 
   for filename in os.listdir(KEYS_DIR):
-    if not filename.startswith("key_") or not  filename.endswith(".txt"):
+    if not filename.startswith("key_") or not filename.endswith(".txt"):
       continue
     filepath = os.path.join(KEYS_DIR, filename)
     api_name = filename[4:-4]
@@ -40,7 +40,8 @@ def load_api_keys():
         lines = [line.strip() for line in f.readlines()]
         key_value = next((line for line in lines if line), "")
     except Exception as e:
-      print(f"Failed to read {filename}")
+      print(f"Failed to read {filename}: {e}")
+      continue
 
     if not key_value:
       print(f"{filename} is empty. No key for '{api_name_upper}'.")
@@ -78,45 +79,64 @@ def USAJOBS(keyword, location):
         data = response.json()
     except Exception as e:
         print("USAJOBS request failed:", e)
-        return {}, "Error contacting USAJOBS API."
+        return [], "Error contacting USAJOBS API."
 
     employers = {}  # employer_name -> list of (locationName, lat, lon)
     user_loc = (location or "").strip().lower()
 
     try:
-      jobslist=[]
-      jobs = {}
-      requirements=[]
+        jobslist = []
 
-      for job in data["SearchResult"]["SearchResultItems"]:
-          descriptor = job["MatchedObjectDescriptor"]
-          jobs.update({"employer":descriptor.get("OrganizationName")})
-          jobs.update({"locations":descriptor.get("PositionLocation", [])})
-          jobs.update({"schedule":descriptor.get("PositionSchedule")[0]})
-          jobs.update({"start":descriptor.get("PositionStartDate")})
-          jobs.update({"end":descriptor.get("PositionEndDate")})
+        items = data.get("SearchResult", {}).get("SearchResultItems", [])
+        for job in items:
+            descriptor = job.get("MatchedObjectDescriptor", {})
 
-          ##
-          requirements.append(descriptor.get("UserArea")["Details"]["Education"])
-          requirements.append(descriptor.get("UserArea")["Details"]["Requirements"])
-          requirements.append(descriptor.get("UserArea")["Details"]["WhoMayApply"]["Name"])
-          jobs.update({"requirements":requirements})
+            jobs = {}
+            requirements = []
 
-      jobslist.append(jobs)
-      jobs={}
-      return jobslist
+            jobs.update({"job_title": descriptor.get("PositionTitle", "")})
+            jobs.update({"employer": descriptor.get("OrganizationName", "")})
+            jobs.update({"locations": descriptor.get("PositionLocation", [])})
 
+            schedule = ""
+            sched_list = descriptor.get("PositionSchedule", [])
+            if isinstance(sched_list, list) and sched_list:
+                if isinstance(sched_list[0], dict):
+                    schedule = sched_list[0].get("Name", "")
+                else:
+                    schedule = str(sched_list[0])
+            jobs.update({"schedule": schedule})
+
+            jobs.update({"start": descriptor.get("PositionStartDate", "")})
+            jobs.update({"end": descriptor.get("PositionEndDate", "")})
+
+            jobs.update({"link": (descriptor.get("ApplyURI") or [""])[0]})
+
+            details = descriptor.get("UserArea", {}).get("Details", {})
+            edu = details.get("Education")
+            req = details.get("Requirements")
+            who = details.get("WhoMayApply", {}).get("Name")
+
+            for x in (edu, req, who):
+                if x:
+                    requirements.append(x)
+
+            jobs.update({"requirements": requirements})
+
+            jobslist.append(jobs)
+
+        return jobslist, None
     except Exception as e:
         print("Parsing error:", e)
-        return {}, "Error parsing USAJOBS API response."
+        return [], "Error parsing USAJOBS API response."
 
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
 
-  c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT, email TEXT, creation_date DATE, bio TEXT);")
-  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, requirements TEXT, date_saved DATE);")
-  # (job_id, username, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
+  c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT PRIMARY KEY, email TEXT, password TEXT, creation_date DATE, bio TEXT);")
+  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, requirements TEXT, date_saved INTEGER);")
+  
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
   db.commit()
   db.close()
@@ -126,47 +146,52 @@ def index():
   if 'username' in session:
     return redirect(url_for('homepage'))
   else:
-    text = ""
-    return render_template("login.html", text=text)
+    return render_template("login.html", text="")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
   if request.method == 'POST':
-    username = request.form['username']
-    password = request.form['password']
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '')
+
+    if not username or not password:
+      return render_template('login.html', text="Please enter both username and password")
+    
     db = sqlite3.connect(DB_FILE)
     c = db.cursor()
-    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    c.execute("SELECT username, email, password FROM users WHERE username = ?", (username,))
     user = c.fetchone()
-    print(user)
     db.close()
 
-    if user == None or user[0] != username or user[2] != password:
-      text = "Login failed, create new acc?"
+    if not user or user[2] != password:
+      text = "Login failed. Invalid username or password."
       return render_template('login.html', text=text)
-    elif user[0] == username and user[2] == password:
-      session['username'] = username
-      return redirect(url_for('homepage'))
-    else:
-      return redirect(url_for('index'))
-  return redirect(url_for('index'))
+    
+    session['username'] = username
+    return redirect(url_for('homepage'))
+  
+  return render_template('login.html', text="")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
   if request.method == 'POST':
     db = sqlite3.connect(DB_FILE)
     c = db.cursor()
-    username = request.form['username']
-    email = request.form['email']
-    password = request.form['password']
+    username = request.form.get('username', '').strip()
+    email = request.form.get('email', '').strip()
+    password = request.form.get('password', '')
+
+    if not username or not email or not password:
+      db.close()
+      return render_template('register.html', text="All fields are required!")
 
     c.execute("SELECT * FROM users WHERE username = ?", (username,))
     existing_user = c.fetchone()
 
     if existing_user:
       db.close()
-      text = "This username already taken, try another one!"
-      return render_template('register.html', text = text)
+      text = "This username is already taken, try another one!"
+      return render_template('register.html', text=text)
 
     creation_date = int(time.time())
 
@@ -178,7 +203,8 @@ def register():
     db.close()
     session['username'] = username
     return redirect(url_for('homepage'))
-  return render_template('register.html')
+  
+  return render_template('register.html', text="")
 
 @app.route("/homepage", methods=["GET", "POST"])
 def homepage():
@@ -190,11 +216,12 @@ def homepage():
 def profile():
   if 'username' not in session:
     return redirect(url_for('index'))
+  
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
   username = session['username']
 
-  c.execute("SELECT bio, creation_date from users WHERE username = ?;", (username, ))
+  c.execute("SELECT bio, creation_date from users WHERE username = ?;", (username,))
   result = c.fetchone()
   bio = result[0] if result and result[0] else None
   creation_date = result[1] if result else None
@@ -205,7 +232,7 @@ def profile():
     formatted_creation_date = dt.strftime("%B %d, %Y")
 
   db.close()
-  return render_template("profile.html", username = username, bio = bio, curr_user = session['username'], creation_date = formatted_creation_date)
+  return render_template("profile.html", username=username, bio=bio, curr_user=session['username'], creation_date=formatted_creation_date)
 
 @app.route("/edit_profile", methods=["GET", "POST"])
 def edit_profile():
@@ -217,20 +244,18 @@ def edit_profile():
   c = db.cursor()
   
   if request.method == "POST":
-    bio = request.form.get("bio")
-    bio = bio.strip()
-    if bio is not None:
-      c.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username))
-      db.commit()
+    bio = (request.form.get("bio") or "").strip()
+    c.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username))
+    db.commit()
     db.close() 
     return redirect(url_for('profile'))
 
-  c.execute("SELECT bio FROM users WHERE username = ?", (username, ))
+  c.execute("SELECT bio FROM users WHERE username = ?", (username,))
   result = c.fetchone()
-  bio = result[0] if result and result[0] else None
+  bio = result[0] if result and result[0] else ""
 
   db.close()
-  return render_template("edit_profile.html", username = username, bio = bio)
+  return render_template("edit_profile.html", username=username, bio=bio)
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
@@ -240,6 +265,9 @@ def search():
     if request.method == "POST":
         keyword = request.form.get("keyword", "").strip()
         location = request.form.get("location", "").strip()
+        
+        if not keyword and not location:
+            return render_template("search.html", error="Please enter a keyword or location to search.")
 
         db = sqlite3.connect(DB_FILE)
         c = db.cursor()
@@ -252,13 +280,14 @@ def search():
         db.commit()
         db.close()
 
-        jobs = USAJOBS(keyword, location)
+        jobs, error = USAJOBS(keyword, location)
 
         return render_template(
             "search.html",
             keyword=keyword,
             location=location,
-            jobs=jobs
+            jobs=jobs,
+            error=error
         )
 
     return render_template("search.html")
@@ -278,9 +307,6 @@ def job_detail():
     end_date = request.args.get("end_date", "")
     link = request.args.get("link", "")
     requirements = request.args.get("requirements", "")
-
-    if not lat or not lon:
-        return "No location data available for this job.", 400
 
     return render_template(
         "job_detail.html",
@@ -307,7 +333,7 @@ def my_jobs():
 
   c.execute(
     "SELECT * FROM saved_locations WHERE username = ? ORDER BY date_saved DESC",
-    (username)
+    (username,)
   )
   saved_jobs = c.fetchall()
   db.close()
@@ -316,22 +342,26 @@ def my_jobs():
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
-  return render_template("login.html")
+  session.clear()
+  return redirect(url_for('index'))
 
-@app.route("/save_job", methods=["GET", "POST"])
+@app.route("/save_job", methods=["POST"])
 def save_job():
   if 'username' not in session:
     return redirect(url_for('index'))
   
   username = session['username']
-  job_title = request.form.get("job_title")
-  employer = request.form.get("employer")
-  location_name = request.form.get("location_name")
+  job_title = request.form.get("job_title", "")
+  employer = request.form.get("employer", "")
+  location_name = request.form.get("location_name", "")
   schedule = request.form.get("schedule", "")
   start_date = request.form.get("start_date", "")
   end_date = request.form.get("end_date", "")
   link = request.form.get("link", "")
   requirements = request.form.get("requirements", "")
+
+  if not job_title or not employer:
+    return redirect(url_for('search'))
 
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()

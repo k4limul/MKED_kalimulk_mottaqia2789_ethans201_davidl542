@@ -48,28 +48,48 @@ time spent: 0 hr
 
     {% if jobs is defined and jobs %}
       {% for job in jobs %}
-        <h3>{{ job['employer'] }}</h3>
-        <ul>
-          {% for location in job['locations'] %}
-            <li>
-              {{ location.get('LocationName', 'Unknown') }}
-              <br>
-              <a href="{{ url_for('job_detail',
-                                  job_title=keyword,
-                                  employer=job['employer'],
-                                  location_name=location.get('LocationName'),
-                                  lat=location.get('Latitude'),
-                                  lon=location.get('Longitude'),
-                                  schedule=job.get('schedule', {}).get('Name', ''),
-                                  start_date=job.get('start', ''),
-                                  end_date=job.get('end', ''),
-                                  link=job.get('link', ''),
-                                  requirements='|'.join(job.get('requirements', []))) }}">
-                View details
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
+        <div class="job-card">
+          <h3>{{ job.get('job_title', 'Unknown Position') }}</h3>
+          <h4>{{ job.get('employer', 'Unknown Employer') }}</h4>
+          
+          {% if job.get('schedule') %}
+            <p><strong>Schedule:</strong> {{ job['schedule'] }}</p>
+          {% endif %}
+          
+          {% if job.get('start') %}
+            <p><strong>Start Date:</strong> {{ job['start'] }}</p>
+          {% endif %}
+
+          {% if job.get('end') %}
+            <p><strong>End Date:</strong> {{ job['end'] }}</p>
+          {% endif %}
+          
+          <h5>Locations:</h5>
+          <ul>
+            {% for loc in job.get('locations', []) %}
+              <li class="location-info">
+                <span class="location-name">
+                  {{ loc.get('LocationName') or loc.get('CityName') or 'Location not specified' }}
+                </span>
+                
+                <br>
+                <a href="{{ url_for('job_detail',
+                                    job_title=job.get('job_title',''),
+                                    employer=job.get('employer',''),
+                                    location_name=loc.get('LocationName', loc.get('CityName', '')),
+                                    lat=loc.get('Latitude', ''),
+                                    lon=loc.get('Longitude', ''),
+                                    schedule=job.get('schedule',''),
+                                    start_date=job.get('start',''),
+                                    end_date=job.get('end',''),
+                                    link=job.get('link',''),
+                                    requirements='|'.join(job.get('requirements', []))) }}">
+                  View details
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
         <hr>
       {% endfor %}
     {% elif keyword is defined %}
