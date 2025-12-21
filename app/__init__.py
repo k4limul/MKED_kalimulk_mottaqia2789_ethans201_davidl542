@@ -200,7 +200,7 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         jobdata={}
     return jobslist
 #print(USAJOBS())
-USAJOBS()
+#USAJOBS()
 
 
 
@@ -252,15 +252,16 @@ def RISEJOBS():
         jobdata.update({"employer":owner.get("companyName")})
         jobdata.update({"locations":loc})
         loc=[]
-        jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
-        jobdata.update({"start":owner.get("PositionStartDate")})
-        jobdata.update({"end":owner.get("PositionEndDate")})
-        jobdata.update({"link":owner.get("ApplyURI")})
+#         jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
+#         jobdata.update({"start":owner.get("PositionStartDate")})
+#         jobdata.update({"end":owner.get("PositionEndDate")})
+        jobdata.update({"link":owner.get("url")})
         jobslist.append(jobdata)
+        jobdata={}
     print(count)
-    return jobdata
+    return joblist
 
-#print(RISEJOBS())
+print(RISEJOBS())
 
 if __name__ == "__main__":
   initialize_db()
