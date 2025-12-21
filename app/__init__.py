@@ -206,7 +206,7 @@ def USAJOBS(keyword="Defense",location="Virginia"):
 
 
 
-def RISEJOBS(page=1):
+def RISEJOBS(page=1,keyword=""):
     url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20000&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
     params = {
         "page":page,
@@ -223,6 +223,17 @@ def RISEJOBS(page=1):
     for c in data["result"]["jobs"]:
         count+=1
         owner=c["owner"]
+        if(keyword !=""):
+            keyword=keyword.lower()
+            jobKeywords=c["descriptionBreakdown"]["keywords"]
+            jobKeywords2=[]
+            for k in jobKeywords:
+                jobKeywords2.append(k.lower())
+            #print(jobKeywords2)
+            if not any(keyword in s for s in jobKeywords2):
+                continue
+            else:
+                print(keyword)
         try:
             #jobdata.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
             if(c["locationAddress"] is not None):
@@ -250,7 +261,7 @@ def RISEJOBS(page=1):
     print(count)
     return jobslist
 
-print(RISEJOBS(2))
+print(RISEJOBS(2,"finance"))
 
 if __name__ == "__main__":
   initialize_db()
