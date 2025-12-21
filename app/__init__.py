@@ -206,10 +206,10 @@ def USAJOBS(keyword="Defense",location="Virginia"):
 
 
 
-def RISEJOBS():
+def RISEJOBS(page=1):
     url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20000&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
     params = {
-        "page":3,
+        "page":page,
         "limit": 200,
         "sortedBy":"United States of America"
     }
@@ -219,20 +219,7 @@ def RISEJOBS():
     data=response.json()
     count=0
     coords=[]
-    jobdata={}
     loc=[]
-    link=""
-    location=""
-    lat=""
-    long=""
-    employer=""
-    schedule=""
-    start=""
-    end=""
-    requirements=""
-    # print(data)
-    # print("/n/n/n/n")
-    # print(data["result"])
     for c in data["result"]["jobs"]:
         count+=1
         owner=c["owner"]
@@ -263,7 +250,7 @@ def RISEJOBS():
     print(count)
     return jobslist
 
-print(RISEJOBS())
+print(RISEJOBS(2))
 
 if __name__ == "__main__":
   initialize_db()
