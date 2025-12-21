@@ -194,37 +194,17 @@ def USAJOBS(keyword="Defense",location="Virginia"):
         jobdata.update({"schedule":descriptor.get("PositionSchedule")[0]})
         jobdata.update({"start":descriptor.get("PositionStartDate")})
         jobdata.update({"end":descriptor.get("PositionEndDate")})
+        jobdata.update({"link":descriptor.get("ApplyURI")})
         # jobs["employer"] = descriptor.get("OrganizationName")
         # jobs["link"]=descriptor.get("ApplyURL")
         # jobs["locations"] = descriptor.get("PositionLocation", [])
         # jobs["schedule"]= descriptor.get("PositionSchedule")["Name"]
         # jobs["start"]=descriptor.get("PositionStartDate")
         # jobs["end"]=descriptor.get("PositionEndDate")
-
-        t=descriptor.get("UserArea")["Details"]["Education"]
-        #deets.append(t)
-        #deets.append(descriptor.get("UserArea")["Details"]["Requirements"])
-        r=descriptor.get("UserArea")["Details"]["Requirements"]
-
-        deets.append(r)
-        #deets.append(descriptor.get("UserArea")["Details"]["WhoMayApply"]["Name"])
-
-
-        # if job not in data:
-        #     jobs[job] = ""
-
-        # for loc in locations:
-        #     if loc is not None:
-        #         location = loc.get("LocationName")
-        #         lat = loc.get("Latitude")
-        #         lon = loc.get("Longitude")
-        # jobs[coords]=jobs[loc]
-    jobslist.append((jobdata,deets))
-    alldeets.append(deets)
-    jobdata={}
-    deets=[]
-    return alldeets
-#    return jobslist
+        jobslist.append(jobdata)
+        
+        jobdata={}
+    return jobslist
 print(USAJOBS())
 USAJOBS()
 #print(USAJOBS()[0][1][0])
