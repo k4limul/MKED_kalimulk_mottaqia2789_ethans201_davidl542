@@ -219,7 +219,7 @@ def RISEJOBS():
     data=response.json()
     count=0
     coords=[]
-    jobdata=[]
+    jobdata={}
     loc=[]
     link=""
     location=""
@@ -235,7 +235,7 @@ def RISEJOBS():
     # print(data["result"])
     for c in data["result"]["jobs"]:
         count+=1
-        owner=c["Owner"]
+        owner=c["owner"]
         try:
             #jobdata.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
             if(c["locationAddress"] is not None):
@@ -255,11 +255,13 @@ def RISEJOBS():
 #         jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
 #         jobdata.update({"start":owner.get("PositionStartDate")})
 #         jobdata.update({"end":owner.get("PositionEndDate")})
-        jobdata.update({"link":owner.get("url")})
+        jobdata.update({"link":c.get("url")})
+        salary={"salaryMin":c["descriptionBreakdown"].get("salaryRangeMinYearly"),"salaryMax":c["descriptionBreakdown"].get("salaryRangeMaxYearly")}
+        jobdata.update({"salary":salary})
         jobslist.append(jobdata)
         jobdata={}
     print(count)
-    return joblist
+    return jobslist
 
 print(RISEJOBS())
 
