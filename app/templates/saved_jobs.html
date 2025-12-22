@@ -28,7 +28,19 @@ time spent: 0 hr
   {% for job in saved_jobs %}
     <div class="bg-neutral-primary-soft block w-full max-w-4xl mx-auto p-6 border border-default rounded-base shadow-xs mb-4">
       <div class="flex items-start justify-between mb-2">
-        <h3 class="text-xl font-semibold tracking-tight text-heading leading-7">{{ job[2] }}</h3>
+        <a href="{{ url_for('job_detail',
+                            job_title=job[2],
+                            employer=job[3],
+                            location_name=job[4],
+                            lat=job[11] if job|length > 11 else '',
+                            lon=job[12] if job|length > 12 else '',
+                            schedule=job[5],
+                            start_date=job[6],
+                            end_date=job[7],
+                            link=job[8]) }}" 
+           class="text-xl font-semibold tracking-tight text-heading leading-7 hover:text-amber-700 hover:underline">
+          {{ job[2] }}
+        </a>
         {% if job[10] == 'applied' %}
           <span class="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">applied</span>
         {% else %}
