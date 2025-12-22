@@ -10,6 +10,51 @@ time spent: 0 hr
 
 {% block title %}Search Jobs{% endblock %}
 
+{% block extra_head %}
+<style>
+  .job-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+  }
+  .job-card h3 {
+    margin-top: 0;
+  }
+  .view-details-button {
+    background-color: #2563eb;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+    margin-left: 30px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .view-details-button:hover {
+    background-color: #1d4ed8;
+  }
+  .location-list {
+    margin-top: 10px;
+  }
+  .location-item {
+    margin: 12px 0;
+    padding: 10px;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+  }
+  .location-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #374151;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <h1 class="text-3xl font-bold mb-4">Search Jobs</h1>
 
@@ -30,7 +75,7 @@ time spent: 0 hr
   {% for job in jobs %}
     <div class="job-card">
       <h3 class="text-xl font-bold">{{ job.get('job_title', 'Unknown Position') }}</h3>
-      <h4 class="text-lg font-semibold text-gray-700">{{ job.get('employer', 'Unknown Employer') }}</h4>
+      <p><strong>Employer:</strong> {{ job.get('employer', 'Unknown Employer') }}</p>
 
       {% if job.get('schedule') %}
         <p><strong>Schedule:</strong> {{ job['schedule'] }}</p>
@@ -44,32 +89,30 @@ time spent: 0 hr
         <p><strong>End Date:</strong> {{ job['end'] }}</p>
       {% endif %}
 
-      <h5>Locations:</h5>
-      <ul>
-        {% for loc in job.get('locations', []) %}
-          <li class="location-info">
-            <span class="location-name">
-              {{ loc.get('LocationName') or loc.get('CityName') or 'Location not specified' }}
-            </span>
-
-            <br>
-            <a href="{{ url_for('job_detail',
-                                job_title=job.get('job_title',''),
-                                employer=job.get('employer',''),
-                                location_name=loc.get('LocationName', loc.get('CityName', '')),
-                                lat=loc.get('Latitude', ''),
-                                lon=loc.get('Longitude', ''),
-                                schedule=job.get('schedule',''),
-                                start_date=job.get('start',''),
-                                end_date=job.get('end',''),
-                                link=job.get('link','')) }}">
-              View details
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
+      {% if job.get('locations') and job['locations']|length > 0 %}
+        <div class="location-list">
+          <p><strong>Available Locations:</strong></p>
+          {% for loc in job.get('locations', []) %}
+            <div class="location-item">
+              <span class="location-name">{{ loc.get('LocationName') or loc.get('CityName') or 'Location not specified' }}</span>
+              <a href="{{ url_for('job_detail',
+                                  job_title=job.get('job_title',''),
+                                  employer=job.get('employer',''),
+                                  location_name=loc.get('LocationName', loc.get('CityName', '')),
+                                  lat=loc.get('Latitude', ''),
+                                  lon=loc.get('Longitude', ''),
+                                  schedule=job.get('schedule',''),
+                                  start_date=job.get('start',''),
+                                  end_date=job.get('end',''),
+                                  link=job.get('link','')) }}" 
+                 class="view-details-button">
+                View Details
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
     </div>
-    <hr>
   {% endfor %}
 {% elif keyword is defined %}
   <p>No jobs found for that search.</p>
