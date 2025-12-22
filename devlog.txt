@@ -3,6 +3,10 @@ davidL -- 2025-11-25 11:26
 - filled out readme
 - made team flag
 
+kalimulK -- 2025-12-01 22:00
+- create design doc v0
+- document project goals and distribute tasks
+
 davidL -- 2025-12-02 07:00
 - uploaded design doc v1
 - printed DD HC x3
@@ -22,6 +26,10 @@ davidL -- 2025-12-05 11:32
 - set up __init__.py
 - updated .gitignore
 
+kalimulK -- 2025-12-07 11:40
+- start working on login feature
+- setup working app
+
 davidL -- 2025-12-08 11:44
 - set up login + register (register needs debugging)
 - need to set up homepage
@@ -33,6 +41,11 @@ davidL -- 2025-12-09 11:40
 mottaqiA -- 2025-12-10 01:25
 - added checks for api key files
 - removed redundant code
+
+kalimulK -- 2025-12-10 22:56
+- add search bar functionality to homepage
+- receive user input and pass to search route
+- fix bug with homepage displaying a greeting
 
 ethanS -- 2025-12-11 11:40
 -added modular working function for obtaining data from USAJOBSAPI
@@ -57,6 +70,14 @@ ethanS -- 2025-12-18 11:43
 
 mottaqiA -- 2025-12-18 11:43
 - fixed bug with register leading back to home and removed search from navbar
+
+kalimulK -- 2025-12-19 09:52
+- add requests module to requirements.txt
+- fix bug with displaying list of jobs in search.html
+
+kalimulK -- 2025-12-19 10:49
+- add functionality for saving jobs user is interested in
+- setup saved_jobs table and add save job button to search.html
 
 davidL -- 2025-12-19 11:44
 - fixed login-database relationship (recognizes existing user)
@@ -84,3 +105,9 @@ mottaqiA -- 2025-12-22 01:35
 davidL -- 2025-12-22 01:43
 - fixed dd for final version
 - tested site for any potential bugs
+
+kalimulK -- 2025-12-22 3:30
+- revised dd
+- fixed some styling for prettiness
+- renamed tables and pages for consistency with dd
+- added redirects to job posting card from saved_jobs.html and homepage.html
