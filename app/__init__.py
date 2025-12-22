@@ -145,7 +145,6 @@ def initialize_db():
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
   c.execute("CREATE TABLE IF NOT EXISTS job_views(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, timestamp INTEGER, lat TEXT, lon TEXT);")
 
-  # Add columns to existing tables if they don't exist
   try:
     c.execute("ALTER TABLE saved_locations ADD COLUMN status TEXT DEFAULT 'not_applied';")
   except:
@@ -376,7 +375,6 @@ def job_detail(error=""):
     end_date = request.args.get("end_date", "")
     link = request.args.get("link", "")
 
-    # Only save to job_views if we have valid job data
     if job_title and employer:
         username = session['username']
         db = sqlite3.connect(DB_FILE)
@@ -392,7 +390,6 @@ def job_detail(error=""):
         db.commit()
         db.close()
 
-    # Check if lat/lon are valid
     has_map = lat and lon and lat != "" and lon != ""
 
     return render_template(
