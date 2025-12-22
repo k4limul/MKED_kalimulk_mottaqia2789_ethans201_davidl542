@@ -50,9 +50,6 @@
           <a href="{{ url_for('homepage') }}" class="block py-2 px-3 text-heading rounded hover:bg-transparent border-0 hover:text-fg-brand {% if request.endpoint == 'homepage' %}text-fg-brand{% endif %}">Home</a>
         </li>
         <li>
-          <a href="{{ url_for('search') }}" class="block py-2 px-3 text-heading rounded hover:bg-transparent border-0 hover:text-fg-brand {% if request.endpoint == 'search' %}text-fg-brand{% endif %}">Search Jobs</a>
-        </li>
-        <li>
           <a href="{{ url_for('my_jobs') }}" class="block py-2 px-3 text-heading rounded hover:bg-transparent border-0 hover:text-fg-brand {% if request.endpoint == 'my_jobs' %}text-fg-brand{% endif %}">My Jobs</a>
         </li>
         <li class="relative dropdown-parent">
@@ -62,7 +59,7 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
             </svg>
           </button>
-          <div id="dropdown-menu" class="absolute right-0 z-10 bg-neutral-primary-medium border border-default-medium rounded-lg shadow-lg w-44 mt-2">
+          <div id="dropdown-menu" class="absolute right-0 top-full z-10 bg-neutral-primary-medium border border-default-medium rounded-lg shadow-lg w-44">
             <ul class="p-2 text-sm text-body font-medium">
               <li>
                 <a href="{{ url_for('profile') }}" class="flex items-center w-full p-2 hover:bg-neutral-tertiary-medium hover:text-heading rounded">
