@@ -17,6 +17,46 @@ time spent: 0 hr
 {% block content %}
 <h1 class="text-3xl font-bold mb-4">search jobs</h1>
 
+<form action="{{ url_for('search') }}" method="POST"
+      class="bg-neutral-primary-soft border border-default rounded-base shadow-xs p-4 mb-6 max-w-4xl mx-auto">
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+    <input
+      type="text"
+      name="keyword"
+      placeholder="job title..."
+      value="{{ keyword or '' }}"
+      class="p-3 bg-neutral-secondary-soft border border-default-medium rounded text-sm focus:ring-brand focus:border-brand"
+      required
+    >
+
+    <input
+      type="text"
+      name="location"
+      placeholder="city or state"
+      value="{{ location or '' }}"
+      class="p-3 bg-neutral-secondary-soft border border-default-medium rounded text-sm focus:ring-brand focus:border-brand"
+    >
+
+    <select
+      name="source"
+      class="p-3 bg-neutral-secondary-soft border border-default-medium rounded text-sm focus:ring-brand focus:border-brand">
+      <option value="both" {% if source == "both" or not source %}selected{% endif %}>both apis</option>
+      <option value="usajobs" {% if source == "usajobs" %}selected{% endif %}>usajobs only</option>
+      <option value="risejobs" {% if source == "risejobs" %}selected{% endif %}>risejobs only</option>
+    </select>
+
+  </div>
+
+  <button
+    type="submit"
+    class="mt-4 w-full text-white bg-brand hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-sm font-medium rounded text-sm px-4 py-2.5">
+    search
+  </button>
+</form>
+
+
 {% if keyword is defined %}
   <h2 class="text-2xl font-bold mb-4">
     results for "{{ keyword }}"
@@ -48,6 +88,20 @@ time spent: 0 hr
         <p class="text-body text-sm mb-2"><strong>End Date:</strong> {{ job['end'] }}</p>
       {% endif %}
 
+      {% if job.get('salary') and (job['salary'].get('min') is not none or job['salary'].get('max') is not none) %}
+        <p class="text-body text-sm mb-2">
+          <strong>Salary:</strong>
+          {% if job['salary'].get('min') is not none and job['salary'].get('max') is not none %}
+            ${{ "{:,.0f}".format(job['salary']['min']) }} - ${{ "{:,.0f}".format(job['salary']['max']) }}/year
+          {% elif job['salary'].get('min') is not none %}
+            ${{ "{:,.0f}".format(job['salary']['min']) }}+/year
+          {% else %}
+            Up to ${{ "{:,.0f}".format(job['salary']['max']) }}/year
+          {% endif %}
+        </p>
+      {% endif %}
+
+
       {% if job.get('locations') and job['locations']|length > 0 %}
         <div class="mt-4">
           <p class="text-body text-sm font-semibold mb-3"><strong>Available Locations:</strong></p>
@@ -63,6 +117,9 @@ time spent: 0 hr
                                   schedule=job.get('schedule',''),
                                   start_date=job.get('start',''),
                                   end_date=job.get('end',''),
+                                  source=job.get('source',''),
+                                  salary_min=(job.get('salary', {}).get('min') if job.get('salary') else ''),
+                                  salary_max=(job.get('salary', {}).get('max') if job.get('salary') else ''),
                                   link=job.get('link','')) }}"
                  class="inline-flex items-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">
                 view details

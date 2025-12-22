@@ -63,78 +63,169 @@ def get_api_key(name):
   return key
 
 def USAJOBS(keyword, location):
-    url = "https://data.usajobs.gov/api/search"
-    headers = {
-        "User-Agent": "esaldanha60@stuy.edu",
-        "Authorization-Key": get_api_key("us-govt-jobs")
-    }
-    params = {
-        "LocationName": location,
-        "ResultsPerPage": 50,
-        "Keyword": keyword
-    }
-    try:
-        response = requests.get(url, headers=headers, params=params, timeout=6)
-        data = response.json()
-    except Exception as e:
-        print("USAJOBS request failed:", e)
-        return [], "Error contacting USAJOBS API."
+  url = "https://data.usajobs.gov/api/search"
+  headers = {
+    "User-Agent": "esaldanha60@stuy.edu",
+    "Authorization-Key": get_api_key("us-govt-jobs")
+  }
+  params = {
+    "LocationName": location,
+    "ResultsPerPage": 50,
+    "Keyword": keyword
+  }
 
-    employers = {}  # employer_name -> list of (locationName, lat, lon)
+  try:
+    response = requests.get(url, headers=headers, params=params, timeout=6)
+    data = response.json()
+  except Exception as e:
+    print("USAJOBS request failed:", e)
+    return [], "Error contacting USAJOBS API."
+
+  try:
+    jobslist = []
+    items = data.get("SearchResult", {}).get("SearchResultItems", [])
+
     user_loc = (location or "").strip().lower()
 
+    for job in items:
+      descriptor = job.get("MatchedObjectDescriptor", {})
+      jobs = {}
+
+      jobs["job_title"] = descriptor.get("PositionTitle", "")
+      jobs["employer"] = descriptor.get("OrganizationName", "")
+
+      locations = descriptor.get("PositionLocation", []) or []
+      locations2 = []
+      for l in locations:
+        try:
+          if not user_loc or (l.get("LocationName", "").lower().find(user_loc) != -1):
+            locations2.append(l)
+        except Exception:
+          continue
+      jobs["locations"] = locations2
+
+      schedule = ""
+      sched_list = descriptor.get("PositionSchedule", [])
+      if isinstance(sched_list, list) and sched_list:
+        if isinstance(sched_list[0], dict):
+          schedule = sched_list[0].get("Name", "")
+        else:
+          schedule = str(sched_list[0])
+      jobs["schedule"] = schedule
+
+      jobs["start"] = (descriptor.get("PositionStartDate", "") or "")[0:10]
+      jobs["end"] = (descriptor.get("PositionEndDate", "") or "")[0:10]
+      jobs["link"] = (descriptor.get("ApplyURI") or [""])[0]
+      jobs["source"] = "usajobs"
+
+      rem = descriptor.get("PositionRemuneration", [])
+      salary_min = None
+      salary_max = None
+      if isinstance(rem, list) and rem and isinstance(rem[0], dict):
+        r0 = rem[0]
+        try:
+          salary_min = float(r0.get("MinimumRange")) if r0.get("MinimumRange") else None
+        except (ValueError, TypeError):
+          salary_min = None
+        try:
+          salary_max = float(r0.get("MaximumRange")) if r0.get("MaximumRange") else None
+        except (ValueError, TypeError):
+          salary_max = None
+
+      if salary_min is not None or salary_max is not None:
+        jobs["salary"] = {"min": salary_min, "max": salary_max}
+
+      jobslist.append(jobs)
+
+    return jobslist, None
+
+  except KeyError as e:
+    print("Parsing error:", e)
+    return [], "Error parsing USAJOBS API response."
+
+def RISEJOBS(page=1, keyword="", location=""):
+    url = "https://api.joinrise.io/api/v1/jobs/public"
+    params = {
+        "page": page,
+        "limit": 200,
+        "sortedBy": "United States of America",
+        "isTrending": "true",
+        "includeDescription": "true"
+    }
+    
     try:
-        jobslist = []
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    except Exception as e:
+        print("RISEJOBS request failed:", e)
+        return [], "Error contacting RISEJOBS API."
 
-        items = data.get("SearchResult", {}).get("SearchResultItems", [])
-        for job in items:
-            descriptor = job.get("MatchedObjectDescriptor", {})
+    jobslist = []
+    location_lower = location.lower().strip() if location else ""
+    keyword_lower = keyword.lower().strip() if keyword else ""
 
+    try:
+        for c in data.get("result", {}).get("jobs", []):
+            owner = c.get("owner", {})
+            if keyword_lower:
+                skip = True
+                try:
+                    job_keywords = c.get("descriptionBreakdown", {}).get("keywords", [])
+                    job_keywords_lower = [k.lower() for k in job_keywords]
+                    
+                    job_title = c.get("title", "").lower()
+                    
+                    if any(keyword_lower in s for s in job_keywords_lower) or keyword_lower in job_title:
+                        skip = False
+                except (KeyError, TypeError):
+                    pass
+                if skip:
+                    continue
+            
+            # Location filtering
+            if location_lower:
+                job_location = c.get("locationAddress", "")
+                if job_location and location_lower not in job_location.lower():
+                    continue
+            
             jobs = {}
-            requirements = []
-
-            jobs.update({"job_title": descriptor.get("PositionTitle", "")})
-            jobs.update({"employer": descriptor.get("OrganizationName", "")})
-            locations=descriptor.get("PositionLocation")
-            locations2=[]
-            for l in locations:
+            
+            jobs["job_title"] = c.get("title", "")
+            jobs["employer"] = owner.get("companyName", "")
+            jobs["source"] = "RISEJOBS"
+            
+            locations = []
+            if c.get("locationAddress"):
+                loc_dict = {"LocationName": c["locationAddress"]}
+                if c.get("locationCoordinates"):
+                    coords = c["locationCoordinates"]
+                    loc_dict["Latitude"] = coords.get("lat")
+                    loc_dict["Longitude"] = coords.get("lon")
                 
-                if(location.lower() in l["LocationName"].lower()):
-                    locations2.append(l)
-                #print(l.items())
-            #jobs.update({"locations": descriptor.get("PositionLocation")})
-            jobs.update({"locations":locations2})
-            schedule = ""
-            sched_list = descriptor.get("PositionSchedule", [])
-            if isinstance(sched_list, list) and sched_list:
-                if isinstance(sched_list[0], dict):
-                    schedule = sched_list[0].get("Name", "")
-                else:
-                    schedule = str(sched_list[0])
-            jobs.update({"schedule": schedule})
-
-            jobs.update({"start": descriptor.get("PositionStartDate", "")[0:10]})
-            jobs.update({"end": descriptor.get("PositionEndDate", "")[0:10]})
-
-            jobs.update({"link": (descriptor.get("ApplyURI") or [""])[0]})
-
-            details = descriptor.get("UserArea", {}).get("Details", {})
-            edu = details.get("Education")
-            req = details.get("Requirements")
-            who = details.get("WhoMayApply", {}).get("Name")
-
-            for x in (edu, req, who):
-                if x:
-                    requirements.append(x)
-
-            jobs.update({"requirements": requirements})
-
+                locations.append(loc_dict)
+            
+            jobs["locations"] = locations
+            
+            jobs["link"] = c.get("url", "")
+            
+            description_breakdown = c.get("descriptionBreakdown", {})
+            salary_min = description_breakdown.get("salaryRangeMinYearly")
+            salary_max = description_breakdown.get("salaryRangeMaxYearly")
+            
+            if salary_min or salary_max:
+                jobs["salary"] = {
+                    "min": salary_min,
+                    "max": salary_max
+                }
+            
             jobslist.append(jobs)
-
+        
         return jobslist, None
-    except KeyError as e:
-        print("Parsing error:", e)
-        return [], "Error parsing USAJOBS API response."
+        
+    except Exception as e:
+        print("RISEJOBS parsing error:", e)
+        return [], "Error parsing RISEJOBS API response."
 
 def initialize_db():
   db = sqlite3.connect(DB_FILE)
@@ -333,6 +424,7 @@ def search():
     if request.method == "POST":
         keyword = request.form.get("keyword", "").strip()
         location = request.form.get("location", "").strip()
+        source = request.form.get("source", "both").strip().lower()
         
         if not keyword and not location:
             return render_template("search.html", error="Please enter a keyword or location to search.")
@@ -340,7 +432,7 @@ def search():
         db = sqlite3.connect(DB_FILE)
         c = db.cursor()
         search_id = str(time.time())
-        filters_applied = f"location={location}"
+        filters_applied = f"location={location};source={source}"
         c.execute(
             "INSERT INTO search_history VALUES (?, ?, ?, ?, ?)",
             (search_id, session['username'], int(time.time()), keyword, filters_applied)
@@ -348,12 +440,28 @@ def search():
         db.commit()
         db.close()
 
-        jobs, error = USAJOBS(keyword, location)
+        jobs = []
+        error = None
+
+        if source in ["usajobs", "both"]:
+            usa_jobs, usa_error = USAJOBS(keyword, location)
+            if usa_jobs:
+                jobs.extend(usa_jobs)
+            if usa_error and not error:
+                error = usa_error
+        
+        if source in ["risejobs", "both"]:
+            rise_jobs, rise_error = RISEJOBS(page=1, keyword=keyword, location=location)
+            if rise_jobs:
+                jobs.extend(rise_jobs)
+            if rise_error:
+                error = f"{error}; {rise_error}" if error else rise_error
 
         return render_template(
             "search.html",
             keyword=keyword,
             location=location,
+            source=source,
             jobs=jobs,
             error=error
         )
@@ -368,12 +476,18 @@ def job_detail(error=""):
     job_title = request.args.get("job_title", "")
     employer = request.args.get("employer", "")
     location_name = request.args.get("location_name", "")
-    lat = request.args.get("lat", "")
-    lon = request.args.get("lon", "")
+
+    lat = request.args.get("lat", type=float)
+    lon = request.args.get("lon", type=float)
+
     schedule = request.args.get("schedule", "")
     start_date = request.args.get("start_date", "")
     end_date = request.args.get("end_date", "")
     link = request.args.get("link", "")
+    source = request.args.get("source", "")
+
+    salary_min = request.args.get("salary_min", type=float)
+    salary_max = request.args.get("salary_max", type=float)
 
     if job_title and employer:
         username = session['username']
@@ -390,7 +504,7 @@ def job_detail(error=""):
         db.commit()
         db.close()
 
-    has_map = lat and lon and lat != "" and lon != ""
+    has_map = (lat is not None and lon is not None)
 
     return render_template(
         "job_detail.html",
@@ -403,6 +517,9 @@ def job_detail(error=""):
         start_date=start_date,
         end_date=end_date,
         link=link,
+        source=source,
+        salary_min=salary_min,
+        salary_max=salary_max,
         error=error,
         has_map=has_map
     )
@@ -443,30 +560,27 @@ def save_job():
   start_date = request.form.get("start_date", "")
   end_date = request.form.get("end_date", "")
   link = request.form.get("link", "")
+  
   lat = request.form.get("lat", "")
   lon = request.form.get("lon", "")
 
-  allData=[username,job_title,employer,location_name,schedule,start_date,end_date,link]
   if not job_title or not employer:
     return redirect(url_for('search'))
 
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
-  allowToAdd=True
-  job_id = str(time.time())
-  date_saved = int(time.time())
 
   c.execute("SELECT * FROM saved_jobs WHERE username=? AND job_title=? AND employer=? AND location=? AND schedule=? AND start_date=? AND end_date=? AND link=?", (username,job_title,employer,location_name,schedule,start_date,end_date,link))
   check=c.fetchall()
-  if(check !=[]):
-      allowToAdd=False
-  if(allowToAdd):
-      c.execute(
-        "INSERT INTO saved_jobs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, date_saved, 'not_applied', lat, lon)
-      )
-  else:
-      return redirect(url_for('saved_jobs', error="Job Already Saved"))
+
+  if check:
+    db.close()
+    return redirect(url_for('saved_jobs', error="This job is already saved"))
+  
+  job_id = str(time.time())
+  date_saved = int(time.time())
+
+  c.execute("INSERT INTO saved_jobs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, date_saved, 'not_applied', lat, lon))
 
   db.commit()
   db.close()

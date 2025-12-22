@@ -21,6 +21,10 @@
   <div class="bg-neutral-primary-soft block w-full p-6 border border-default rounded-base shadow-xs mb-6">
     <h2 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">{{ employer or "Unknown Employer" }}</h2>
 
+    {% if source %}
+      <p class="text-body text-sm mb-2"><strong>Source:</strong> {{ source }}</p>
+    {% endif %}
+
     <p class="text-body text-sm mb-2"><strong>Location:</strong> {{ location_name or "Not specified" }}</p>
 
     {% if schedule %}
@@ -33,6 +37,18 @@
 
     {% if end_date %}
       <p class="text-body text-sm mb-2"><strong>End Date:</strong> {{ end_date }}</p>
+    {% endif %}
+
+    {% if salary_min is not none or salary_max is not none %}
+      <p class="text-body text-sm mb-2"><strong>Salary:</strong>
+        {% if salary_min is not none and salary_max is not none %}
+          ${{ "{:,.0f}".format(salary_min) }} - ${{ "{:,.0f}".format(salary_max) }}/year
+        {% elif salary_min is not none %}
+          ${{ "{:,.0f}".format(salary_min) }}+/year
+        {% else %}
+          Up to ${{ "{:,.0f}".format(salary_max) }}/year
+        {% endif %}
+      </p>
     {% endif %}
 
     <div class="flex gap-3 mt-4">

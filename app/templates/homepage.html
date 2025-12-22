@@ -42,6 +42,14 @@ time spent: 0.0 hr
       <input type="text" id="location" name="location" class="block w-full p-3 ps-9 bg-neutral-secondary-soft border border-default-medium text-heading text-sm rounded focus:ring-brand focus:border-brand shadow-sm placeholder:text-body" placeholder="city or state" />
     </div>
 
+    <label for="source" class="block mb-2.5 text-sm font-medium text-heading sr-only">source</label>
+    <select id="source" name="source"
+            class="block w-full p-3 bg-neutral-secondary-soft border border-default-medium text-heading text-sm rounded focus:ring-brand focus:border-brand shadow-sm mb-3">
+      <option value="both" selected>both apis</option>
+      <option value="usajobs">usajobs only</option>
+      <option value="risejobs">risejobs only</option>
+    </select>
+
     <button type="submit" class="w-full text-white bg-brand hover:bg-amber-800 border border-transparent focus:ring-4 focus:ring-amber-200 shadow-sm font-medium rounded text-sm px-4 py-2.5 focus:outline-none">search</button>
   </form>
 </div>
