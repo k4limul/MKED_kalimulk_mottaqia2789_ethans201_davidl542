@@ -246,25 +246,38 @@ def RISEJOBS(page=1,keyword=""):
                     skip=True
                     
             except KeyError:
-                print("Round and round")
+                #print("Round and round")
                 skip=True
         if(skipper):
             skip=False
         if(skip==True):
-            print("Skipped")
+            #print("Skipped")
             continue
         try:
             
             #jobdata.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
+           
             if(c["locationAddress"] is not None):
                 location=c["locationAddress"]
                 loc.append(location)
+#             print("loc")
+#             print(loc)
+#             print(c["locationCoordinates"])
             if(c["locationCoordinates"] is not None):
-                locCoord=c["locationCoordinates"]
-                coords.append(c["locationCoordinates"])
-                lat=locCoord["latitude"]
-                long=locCoord["longitude"]
-                loc.append(coords)
+                loc.append(c["locationCoordinates"])
+                #print(c["locationCoordinates"] )
+#                 locCoord=c["locationCoordinates"]
+#                 coords.append(c["locationCoordinates"])
+#                 lat=locCoord["latitude"]
+#                 long=locCoord["longitude"]
+#                 loc.append(locCoord)
+            
+#             if(owner["locationCoordinates"] is not None):
+#                 locCoord=owner["locationCoordinates"]
+#                 coords.append(owner["locationCoordinates"])
+#                 lat=locCoord["latitude"]
+#                 long=locCoord["longitude"]
+#                 loc.append(locCoord)
             
     #         jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
     #         jobdata.update({"start":owner.get("PositionStartDate")})
@@ -272,7 +285,7 @@ def RISEJOBS(page=1,keyword=""):
             
             
         except KeyError:
-            print("Error")
+            #print("Error")
             loc.append("No Coords")
         jobdata.update({"link":c.get("url")})
         salary={"salaryMin":c["descriptionBreakdown"].get("salaryRangeMinYearly"),"salaryMax":c["descriptionBreakdown"].get("salaryRangeMaxYearly")}
