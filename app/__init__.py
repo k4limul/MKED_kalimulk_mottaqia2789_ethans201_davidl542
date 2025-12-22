@@ -141,22 +141,22 @@ def initialize_db():
   c = db.cursor()
 
   c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT PRIMARY KEY, email TEXT, password TEXT, creation_date DATE, bio TEXT);")
-  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, date_saved INTEGER, status TEXT DEFAULT 'not_applied', lat TEXT, lon TEXT);")
+  c.execute("CREATE TABLE IF NOT EXISTS saved_jobs(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, date_saved INTEGER, status TEXT DEFAULT 'not_applied', lat TEXT, lon TEXT);")
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
   c.execute("CREATE TABLE IF NOT EXISTS job_views(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, timestamp INTEGER, lat TEXT, lon TEXT);")
 
   try:
-    c.execute("ALTER TABLE saved_locations ADD COLUMN status TEXT DEFAULT 'not_applied';")
+    c.execute("ALTER TABLE saved_jobs ADD COLUMN status TEXT DEFAULT 'not_applied';")
   except:
     pass
 
   try:
-    c.execute("ALTER TABLE saved_locations ADD COLUMN lat TEXT;")
+    c.execute("ALTER TABLE saved_jobs ADD COLUMN lat TEXT;")
   except:
     pass
 
   try:
-    c.execute("ALTER TABLE saved_locations ADD COLUMN lon TEXT;")
+    c.execute("ALTER TABLE saved_jobs ADD COLUMN lon TEXT;")
   except:
     pass
 
@@ -286,11 +286,11 @@ def profile():
   total_viewed = c.fetchone()[0]
 
   # Total jobs saved
-  c.execute("SELECT COUNT(*) FROM saved_locations WHERE username = ?", (username,))
+  c.execute("SELECT COUNT(*) FROM saved_jobs WHERE username = ?", (username,))
   total_saved = c.fetchone()[0]
 
   # Total applications (jobs marked as applied)
-  c.execute("SELECT COUNT(*) FROM saved_locations WHERE username = ? AND status = 'applied'", (username,))
+  c.execute("SELECT COUNT(*) FROM saved_jobs WHERE username = ? AND status = 'applied'", (username,))
   total_applied = c.fetchone()[0]
 
   db.close()
@@ -407,8 +407,8 @@ def job_detail(error=""):
         has_map=has_map
     )
 
-@app.route("/my_jobs", methods=["GET", "POST"])
-def my_jobs():
+@app.route("/saved_jobs", methods=["GET", "POST"])
+def saved_jobs():
   if 'username' not in session:
     return redirect(url_for('index'))
   error = request.args.get('error', "")
@@ -417,13 +417,13 @@ def my_jobs():
   c = db.cursor()
 
   c.execute(
-    "SELECT * FROM saved_locations WHERE username = ? ORDER BY date_saved DESC",
+    "SELECT * FROM saved_jobs WHERE username = ? ORDER BY date_saved DESC",
     (username,)
   )
   saved_jobs = c.fetchall()
   db.close()
 
-  return render_template("my_jobs.html", saved_jobs=saved_jobs,error=error)
+  return render_template("saved_jobs.html", saved_jobs=saved_jobs,error=error)
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
@@ -456,22 +456,22 @@ def save_job():
   job_id = str(time.time())
   date_saved = int(time.time())
 
-  c.execute("SELECT * FROM saved_locations WHERE username=? AND job_title=? AND employer=? AND location=? AND schedule=? AND start_date=? AND end_date=? AND link=?", (username,job_title,employer,location_name,schedule,start_date,end_date,link))
+  c.execute("SELECT * FROM saved_jobs WHERE username=? AND job_title=? AND employer=? AND location=? AND schedule=? AND start_date=? AND end_date=? AND link=?", (username,job_title,employer,location_name,schedule,start_date,end_date,link))
   check=c.fetchall()
   if(check !=[]):
       allowToAdd=False
   if(allowToAdd):
       c.execute(
-        "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO saved_jobs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, date_saved, 'not_applied', lat, lon)
       )
   else:
-      return redirect(url_for('my_jobs', error="Job Already Saved"))
+      return redirect(url_for('saved_jobs', error="Job Already Saved"))
 
   db.commit()
   db.close()
 
-  return redirect(url_for('my_jobs'))
+  return redirect(url_for('saved_jobs'))
 
 @app.route("/toggle_status", methods=["POST"])
 def toggle_status():
@@ -485,18 +485,18 @@ def toggle_status():
   c = db.cursor()
 
   # Get current status
-  c.execute("SELECT status FROM saved_locations WHERE id = ? AND username = ?", (job_id, username))
+  c.execute("SELECT status FROM saved_jobs WHERE id = ? AND username = ?", (job_id, username))
   result = c.fetchone()
 
   if result:
     current_status = result[0]
     new_status = 'applied' if current_status == 'not_applied' else 'not_applied'
 
-    c.execute("UPDATE saved_locations SET status = ? WHERE id = ? AND username = ?", (new_status, job_id, username))
+    c.execute("UPDATE saved_jobs SET status = ? WHERE id = ? AND username = ?", (new_status, job_id, username))
     db.commit()
 
   db.close()
-  return redirect(url_for('my_jobs'))
+  return redirect(url_for('saved_jobs'))
 
 @app.route("/remove_job", methods=["POST"])
 def remove_job():
@@ -509,11 +509,11 @@ def remove_job():
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
 
-  c.execute("DELETE FROM saved_locations WHERE id = ? AND username = ?", (job_id, username))
+  c.execute("DELETE FROM saved_jobs WHERE id = ? AND username = ?", (job_id, username))
   db.commit()
   db.close()
 
-  return redirect(url_for('my_jobs'))
+  return redirect(url_for('saved_jobs'))
 
 if __name__ == "__main__":
   initialize_db()

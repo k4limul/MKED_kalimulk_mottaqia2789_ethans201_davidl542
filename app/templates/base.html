@@ -52,7 +52,7 @@
           <a href="{{ url_for('homepage') }}" class="block py-2 px-3 text-heading rounded hover:bg-transparent border-0 hover:text-fg-brand {% if request.endpoint == 'homepage' %}text-fg-brand{% endif %}">home</a>
         </li>
         <li>
-          <a href="{{ url_for('my_jobs') }}" class="block py-2 px-3 text-heading rounded hover:bg-transparent border-0 hover:text-fg-brand {% if request.endpoint == 'my_jobs' %}text-fg-brand{% endif %}">my jobs</a>
+          <a href="{{ url_for('saved_jobs') }}" class="block py-2 px-3 text-heading rounded hover:bg-transparent border-0 hover:text-fg-brand {% if request.endpoint == 'saved_jobs' %}text-fg-brand{% endif %}">my jobs</a>
         </li>
         <li class="relative dropdown-parent">
           <button class="flex items-center justify-between py-2 px-3 rounded font-medium text-heading hover:bg-transparent border-0 hover:text-fg-brand">
