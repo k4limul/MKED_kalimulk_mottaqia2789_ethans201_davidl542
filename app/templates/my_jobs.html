@@ -24,6 +24,21 @@ time spent: 0 hr
   .job-card h3 {
     margin-top: 0;
   }
+  .apply-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+    margin-top: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .apply-button:hover {
+    background-color: #45a049;
+  }
 </style>
 {% endblock %}
 
@@ -40,7 +55,7 @@ time spent: 0 hr
       <p><strong>Start Date:</strong> {{ job[6] }}</p>
       <p><strong>End Date:</strong> {{ job[7] }}</p>
       {% if job[8] %}
-        <p><a href="{{ job[8] }}" target="_blank">Apply Here</a></p>
+        <a href="{{ job[8] }}" target="_blank" class="apply-button">Apply Here</a>
       {% endif %}
     </div>
   {% endfor %}
