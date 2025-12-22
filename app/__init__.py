@@ -98,7 +98,7 @@ def USAJOBS(keyword, location):
             locations=descriptor.get("PositionLocation")
             locations2=[]
             for l in locations:
-                print(l["LocationName"])
+                
                 if(location.lower() in l["LocationName"].lower()):
                     locations2.append(l)
                 #print(l.items())
@@ -299,7 +299,7 @@ def search():
     return render_template("search.html")
 
 @app.route("/job")
-def job_detail():
+def job_detail(error=""):
     if 'username' not in session:
         return redirect(url_for('index'))
 
@@ -325,14 +325,15 @@ def job_detail():
         start_date=start_date,
         end_date=end_date,
         link=link,
-        requirements=requirements
+        requirements=requirements,
+        error=error
     )
 
 @app.route("/my_jobs", methods=["GET", "POST"])
 def my_jobs():
   if 'username' not in session:
     return redirect(url_for('index'))
-  
+  error = request.args.get('error', "")
   username = session['username']
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
@@ -344,7 +345,7 @@ def my_jobs():
   saved_jobs = c.fetchall()
   db.close()
 
-  return render_template("my_jobs.html", saved_jobs=saved_jobs)
+  return render_template("my_jobs.html", saved_jobs=saved_jobs,error=error)
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
@@ -366,19 +367,26 @@ def save_job():
   link = request.form.get("link", "")
   requirements = request.form.get("requirements", "")
 
+  allData=[username,job_title,employer,location_name,schedule,start_date,end_date,link,requirements]
   if not job_title or not employer:
     return redirect(url_for('search'))
 
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
-
+  allowToAdd=True
   job_id = str(time.time())
   date_saved = int(time.time())
-
-  c.execute(
-        "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
-  )
+  c.execute("SELECT * FROM saved_locations WHERE username=? AND job_title=? AND employer=? AND location=? AND schedule=? AND start_date=? AND end_date=? AND link=? AND requirements=?", (username,job_title,employer,location_name,schedule,start_date,end_date,link,requirements))
+  check=c.fetchall()
+  if(check !=[]):
+      allowToAdd=False
+  if(allowToAdd):
+      c.execute(
+            "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
+      )
+  else:
+      return redirect(url_for('my_jobs', error="Job Already Saved"))
   db.commit()
   db.close()
 
