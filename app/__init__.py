@@ -73,7 +73,6 @@ def USAJOBS(keyword, location):
         "ResultsPerPage": 50,
         "Keyword": keyword
     }
-
     try:
         response = requests.get(url, headers=headers, params=params, timeout=6)
         data = response.json()
@@ -96,8 +95,15 @@ def USAJOBS(keyword, location):
 
             jobs.update({"job_title": descriptor.get("PositionTitle", "")})
             jobs.update({"employer": descriptor.get("OrganizationName", "")})
-            jobs.update({"locations": descriptor.get("PositionLocation", [])})
-
+            locations=descriptor.get("PositionLocation")
+            locations2=[]
+            for l in locations:
+                print(l["LocationName"])
+                if(location.lower() in l["LocationName"].lower()):
+                    locations2.append(l)
+                #print(l.items())
+            #jobs.update({"locations": descriptor.get("PositionLocation")})
+            jobs.update({"locations":locations2})
             schedule = ""
             sched_list = descriptor.get("PositionSchedule", [])
             if isinstance(sched_list, list) and sched_list:
@@ -107,8 +113,8 @@ def USAJOBS(keyword, location):
                     schedule = str(sched_list[0])
             jobs.update({"schedule": schedule})
 
-            jobs.update({"start": descriptor.get("PositionStartDate", "")})
-            jobs.update({"end": descriptor.get("PositionEndDate", "")})
+            jobs.update({"start": descriptor.get("PositionStartDate", "")[0:10]})
+            jobs.update({"end": descriptor.get("PositionEndDate", "")[0:10]})
 
             jobs.update({"link": (descriptor.get("ApplyURI") or [""])[0]})
 
@@ -126,7 +132,7 @@ def USAJOBS(keyword, location):
             jobslist.append(jobs)
 
         return jobslist, None
-    except Exception as e:
+    except KeyError as e:
         print("Parsing error:", e)
         return [], "Error parsing USAJOBS API response."
 
