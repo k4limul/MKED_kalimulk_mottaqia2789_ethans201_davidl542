@@ -45,6 +45,8 @@ time spent: 0 hr
 {% block content %}
 <h1 class="text-3xl font-bold mb-4">My Saved Jobs</h1>
 
+{{error}}
+
 {% if saved_jobs %}
   {% for job in saved_jobs %}
     <div class="job-card">
