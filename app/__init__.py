@@ -207,11 +207,13 @@ def USAJOBS(keyword="Defense",location="Virginia"):
 
 
 def RISEJOBS(page=1,keyword=""):
-    url= "https://api.joinrise.io/api/v1/jobs/public?page=1&limit=20000&sort=asc&sortedBy=createdAt&includeDescription=true&isTrending=true"
+    url= "https://api.joinrise.io/api/v1/jobs/public"
     params = {
         "page":page,
         "limit": 200,
-        "sortedBy":"United States of America"
+        "sortedBy":"United States of America",
+        "isTrending":"true",
+        "includeDescription":"true"
     }
     jobslist=[]
     jobdata = {}   # employer_name -> list of (location name, lat, lon)
@@ -220,48 +222,70 @@ def RISEJOBS(page=1,keyword=""):
     count=0
     coords=[]
     loc=[]
+
     for c in data["result"]["jobs"]:
+        
         count+=1
         owner=c["owner"]
+        skip=False
+        skipper=False
         if(keyword !=""):
             keyword=keyword.lower()
-            jobKeywords=c["descriptionBreakdown"]["keywords"]
-            jobKeywords2=[]
-            for k in jobKeywords:
-                jobKeywords2.append(k.lower())
-            #print(jobKeywords2)
-            if not any(keyword in s for s in jobKeywords2):
-                continue
-            else:
-                print(keyword)
+            try:
+                jobKeywords=c["descriptionBreakdown"]["keywords"]
+                jobKeywords2=[]
+                for k in jobKeywords:
+                    jobKeywords2.append(k.lower())
+                #print(jobKeywords2)
+                if any(keyword in s for s in jobKeywords2):
+                    skipper=True
+                    print(c)
+                    print(jobKeywords2)
+                    break
+                else:
+                    skip=True
+                    
+            except KeyError:
+                print("Round and round")
+                skip=True
+        if(skipper):
+            skip=False
+        if(skip==True):
+            print("Skipped")
+            continue
         try:
+            
             #jobdata.append(c["descriptionBreakdown"]["oneSentenceJobSummary"])
             if(c["locationAddress"] is not None):
                 location=c["locationAddress"]
                 loc.append(location)
+                print(1)
             if(c["locationCoordinates"] is not None):
                 locCoord=c["locationCoordinates"]
                 coords.append(c["locationCoordinates"])
                 lat=locCoord["latitude"]
                 long=locCoord["longitude"]
                 loc.append(coords)
+            jobdata.update({"link":c.get("url")})
+            salary={"salaryMin":c["descriptionBreakdown"].get("salaryRangeMinYearly"),"salaryMax":c["descriptionBreakdown"].get("salaryRangeMaxYearly")}
+            jobdata.update({"salary":salary})
+            jobdata.update({"employer":owner.get("companyName")})
+            jobdata.update({"locations":loc})
+            loc=[]
+    #         jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
+    #         jobdata.update({"start":owner.get("PositionStartDate")})
+    #         jobdata.update({"end":owner.get("PositionEndDate")})
+            
+            print(jobslist)
+            jobslist.append(jobdata)
+            jobdata={}
         except KeyError:
-            loc.append("Remote Job")
-        jobdata.update({"employer":owner.get("companyName")})
-        jobdata.update({"locations":loc})
-        loc=[]
-#         jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
-#         jobdata.update({"start":owner.get("PositionStartDate")})
-#         jobdata.update({"end":owner.get("PositionEndDate")})
-        jobdata.update({"link":c.get("url")})
-        salary={"salaryMin":c["descriptionBreakdown"].get("salaryRangeMinYearly"),"salaryMax":c["descriptionBreakdown"].get("salaryRangeMaxYearly")}
-        jobdata.update({"salary":salary})
-        jobslist.append(jobdata)
-        jobdata={}
-    print(count)
+            print("Error")
+            loc.append("No Coords")
+    print(len(jobslist))
     return jobslist
 
-print(RISEJOBS(2,"finance"))
+print(RISEJOBS(1,"health"))
 
 if __name__ == "__main__":
   initialize_db()
