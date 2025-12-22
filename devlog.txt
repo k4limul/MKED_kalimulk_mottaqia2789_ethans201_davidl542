@@ -80,3 +80,7 @@ mottaqiA -- 2025-12-22 01:35
 - added salaries
 - made job details have more info
 - fixed some bugs
+
+davidL -- 2025-12-22 01:43
+- fixed dd for final version
+- tested site for any potential bugs
