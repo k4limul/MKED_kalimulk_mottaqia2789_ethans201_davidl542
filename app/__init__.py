@@ -239,9 +239,9 @@ def RISEJOBS(page=1,keyword=""):
                 #print(jobKeywords2)
                 if any(keyword in s for s in jobKeywords2):
                     skipper=True
-                    print(c)
-                    print(jobKeywords2)
-                    break
+#                     print(c)
+#                     print(jobKeywords2)
+#                     
                 else:
                     skip=True
                     
@@ -259,29 +259,30 @@ def RISEJOBS(page=1,keyword=""):
             if(c["locationAddress"] is not None):
                 location=c["locationAddress"]
                 loc.append(location)
-                print(1)
             if(c["locationCoordinates"] is not None):
                 locCoord=c["locationCoordinates"]
                 coords.append(c["locationCoordinates"])
                 lat=locCoord["latitude"]
                 long=locCoord["longitude"]
                 loc.append(coords)
-            jobdata.update({"link":c.get("url")})
-            salary={"salaryMin":c["descriptionBreakdown"].get("salaryRangeMinYearly"),"salaryMax":c["descriptionBreakdown"].get("salaryRangeMaxYearly")}
-            jobdata.update({"salary":salary})
-            jobdata.update({"employer":owner.get("companyName")})
-            jobdata.update({"locations":loc})
-            loc=[]
+            
     #         jobdata.update({"schedule":owner.get("PositionSchedule")[0]})
     #         jobdata.update({"start":owner.get("PositionStartDate")})
     #         jobdata.update({"end":owner.get("PositionEndDate")})
             
-            print(jobslist)
-            jobslist.append(jobdata)
-            jobdata={}
+            
         except KeyError:
             print("Error")
             loc.append("No Coords")
+        jobdata.update({"link":c.get("url")})
+        salary={"salaryMin":c["descriptionBreakdown"].get("salaryRangeMinYearly"),"salaryMax":c["descriptionBreakdown"].get("salaryRangeMaxYearly")}
+        jobdata.update({"salary":salary})
+        jobdata.update({"employer":owner.get("companyName")})
+        jobdata.update({"locations":loc})
+        loc=[]
+        #print(jobslist)
+        jobslist.append(jobdata)
+        jobdata={}
     print(len(jobslist))
     return jobslist
 
