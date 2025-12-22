@@ -141,8 +141,7 @@ def initialize_db():
   c = db.cursor()
 
   c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT PRIMARY KEY, email TEXT, password TEXT, creation_date DATE, bio TEXT);")
-  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, requirements TEXT, date_saved INTEGER);")
-  
+  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, date_saved INTEGER);")
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
   db.commit()
   db.close()
@@ -312,7 +311,6 @@ def job_detail():
     start_date = request.args.get("start_date", "")
     end_date = request.args.get("end_date", "")
     link = request.args.get("link", "")
-    requirements = request.args.get("requirements", "")
 
     return render_template(
         "job_detail.html",
@@ -325,7 +323,6 @@ def job_detail():
         start_date=start_date,
         end_date=end_date,
         link=link,
-        requirements=requirements
     )
 
 @app.route("/my_jobs", methods=["GET", "POST"])
@@ -364,7 +361,6 @@ def save_job():
   start_date = request.form.get("start_date", "")
   end_date = request.form.get("end_date", "")
   link = request.form.get("link", "")
-  requirements = request.form.get("requirements", "")
 
   if not job_title or not employer:
     return redirect(url_for('search'))
@@ -376,8 +372,8 @@ def save_job():
   date_saved = int(time.time())
 
   c.execute(
-        "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, requirements, date_saved)
+        "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, date_saved)
   )
   db.commit()
   db.close()
