@@ -11,90 +11,49 @@ time spent: 0 hr
 {% block title %}Search Jobs{% endblock %}
 
 {% block extra_head %}
-<style>
-  .job-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 5px;
-  }
-  .job-card h3 {
-    margin-top: 0;
-  }
-  .view-details-button {
-    background-color: #2563eb;
-    color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    display: inline-block;
-    margin-left: 30px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .view-details-button:hover {
-    background-color: #1d4ed8;
-  }
-  .location-list {
-    margin-top: 10px;
-  }
-  .location-item {
-    margin: 12px 0;
-    padding: 10px;
-    background-color: #f3f4f6;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-  }
-  .location-name {
-    font-size: 16px;
-    font-weight: 500;
-    color: #374151;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='search.css') }}">
 {% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-4">Search Jobs</h1>
+<h1 class="text-3xl font-bold mb-4">search jobs</h1>
 
 {% if keyword is defined %}
   <h2 class="text-2xl font-bold mb-4">
-    Results for "{{ keyword }}"
+    results for "{{ keyword }}"
     {% if location %} in "{{ location }}"{% endif %}
   </h2>
 {% else %}
-  <p>Use the search bar on the homepage to search for jobs.</p>
+  <p>use the search bar on the homepage to search for jobs.</p>
 {% endif %}
 
 {% if error is defined and error %}
-  <p class="text-red-600 mb-3">{{ error }}</p>
+  <p class="text-red-600 mb-3">{{ error|lower }}</p>
 {% endif %}
 
 {% if jobs is defined and jobs %}
   {% for job in jobs %}
-    <div class="job-card">
-      <h3 class="text-xl font-bold">{{ job.get('job_title', 'Unknown Position') }}</h3>
-      <p><strong>Employer:</strong> {{ job.get('employer', 'Unknown Employer') }}</p>
+    <div class="bg-neutral-primary-soft block w-full max-w-4xl mx-auto p-6 border border-default rounded-base shadow-xs mb-4">
+      <h3 class="mb-2 text-xl font-semibold tracking-tight text-heading leading-7">{{ job.get('job_title', 'Unknown Position') }}</h3>
+      <p class="text-body text-sm mb-2"><strong>Employer:</strong> {{ job.get('employer', 'Unknown Employer') }}</p>
 
       {% if job.get('schedule') %}
-        <p><strong>Schedule:</strong> {{ job['schedule'] }}</p>
+        <p class="text-body text-sm mb-2"><strong>Schedule:</strong> {{ job['schedule'] }}</p>
       {% endif %}
 
       {% if job.get('start') %}
-        <p><strong>Start Date:</strong> {{ job['start'] }}</p>
+        <p class="text-body text-sm mb-2"><strong>Start Date:</strong> {{ job['start'] }}</p>
       {% endif %}
 
       {% if job.get('end') %}
-        <p><strong>End Date:</strong> {{ job['end'] }}</p>
+        <p class="text-body text-sm mb-2"><strong>End Date:</strong> {{ job['end'] }}</p>
       {% endif %}
 
       {% if job.get('locations') and job['locations']|length > 0 %}
-        <div class="location-list">
-          <p><strong>Available Locations:</strong></p>
+        <div class="mt-4">
+          <p class="text-body text-sm font-semibold mb-3"><strong>Available Locations:</strong></p>
           {% for loc in job.get('locations', []) %}
-            <div class="location-item">
-              <span class="location-name">{{ loc.get('LocationName') or loc.get('CityName') or 'Location not specified' }}</span>
+            <div class="flex items-center justify-between bg-neutral-secondary-soft p-3 rounded mb-3">
+              <span class="text-heading text-sm font-medium">{{ loc.get('LocationName') or loc.get('CityName') or 'Location not specified' }}</span>
               <a href="{{ url_for('job_detail',
                                   job_title=job.get('job_title',''),
                                   employer=job.get('employer',''),
@@ -104,9 +63,9 @@ time spent: 0 hr
                                   schedule=job.get('schedule',''),
                                   start_date=job.get('start',''),
                                   end_date=job.get('end',''),
-                                  link=job.get('link','')) }}" 
-                 class="view-details-button">
-                View Details
+                                  link=job.get('link','')) }}"
+                 class="inline-flex items-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">
+                view details
               </a>
             </div>
           {% endfor %}
@@ -115,6 +74,6 @@ time spent: 0 hr
     </div>
   {% endfor %}
 {% elif keyword is defined %}
-  <p>No jobs found for that search.</p>
+  <p>no jobs found for that search.</p>
 {% endif %}
 {% endblock %}

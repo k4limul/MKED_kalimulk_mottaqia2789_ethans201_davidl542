@@ -1,0 +1,30 @@
+.recent-jobs-section {
+  margin-top: 40px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.recent-jobs-scroll-container {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.recent-jobs-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.recent-jobs-scroll-container::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.recent-jobs-scroll-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.recent-jobs-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

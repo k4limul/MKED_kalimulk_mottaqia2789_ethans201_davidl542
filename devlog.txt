@@ -69,3 +69,8 @@ mottaqiA -- 2025-12-21 15:39
 - added more info to search results
 - fixed adding jobs to saved jobs
 
+davidL -- 2025-12-21 23:59
+- added, fixed styling (tailwind + basic css)
+- added profile stats
+- added recently viewed functionality
+- added navbars

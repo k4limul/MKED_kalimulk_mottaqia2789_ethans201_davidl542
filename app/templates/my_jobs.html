@@ -11,57 +11,58 @@ time spent: 0 hr
 {% block title %}My Jobs{% endblock %}
 
 {% block extra_head %}
-<style>
-  textarea {
-    flex: 1;
-  }
-  .job-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 5px;
-  }
-  .job-card h3 {
-    margin-top: 0;
-  }
-  .apply-button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    display: inline-block;
-    margin-top: 10px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .apply-button:hover {
-    background-color: #45a049;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='my_jobs.css') }}">
 {% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-4">My Saved Jobs</h1>
+<h1 class="text-3xl font-bold mb-4">my saved jobs</h1>
 
-{{error}}
+{% if error %}
+  <div class="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-base mb-4 max-w-4xl mx-auto">
+    <strong class="font-semibold">error:</strong>
+    <span>{{ error|lower }}</span>
+  </div>
+{% endif %}
 
 {% if saved_jobs %}
   {% for job in saved_jobs %}
-    <div class="job-card">
-      <h3 class="text-xl font-bold">{{ job[2] }}</h3>
-      <p><strong>Employer:</strong> {{ job[3] }}</p>
-      <p><strong>Location:</strong> {{ job[4] }}</p>
-      <p><strong>Schedule:</strong> {{ job[5] }}</p>
-      <p><strong>Start Date:</strong> {{ job[6] }}</p>
-      <p><strong>End Date:</strong> {{ job[7] }}</p>
-      {% if job[8] %}
-        <a href="{{ job[8] }}" target="_blank" class="apply-button">Apply Here</a>
-      {% endif %}
+    <div class="bg-neutral-primary-soft block w-full max-w-4xl mx-auto p-6 border border-default rounded-base shadow-xs mb-4">
+      <div class="flex items-start justify-between mb-2">
+        <h3 class="text-xl font-semibold tracking-tight text-heading leading-7">{{ job[2] }}</h3>
+        {% if job[10] == 'applied' %}
+          <span class="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">applied</span>
+        {% else %}
+          <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-3 py-1 rounded-full">not applied</span>
+        {% endif %}
+      </div>
+      <p class="text-body text-sm mb-2"><strong>Employer:</strong> {{ job[3] }}</p>
+      <p class="text-body text-sm mb-2"><strong>Location:</strong> {{ job[4] }}</p>
+      <p class="text-body text-sm mb-2"><strong>Schedule:</strong> {{ job[5] }}</p>
+      <p class="text-body text-sm mb-2"><strong>Start Date:</strong> {{ job[6] }}</p>
+      <p class="text-body text-sm mb-2"><strong>End Date:</strong> {{ job[7] }}</p>
+
+      <div class="flex gap-3 mt-4 flex-wrap">
+        {% if job[8] %}
+          <a href="{{ job[8] }}" target="_blank" class="inline-flex items-center text-white bg-green-600 border border-transparent hover:bg-green-700 focus:ring-4 focus:ring-green-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">apply here</a>
+        {% endif %}
+
+        <form action="{{ url_for('toggle_status') }}" method="POST" class="inline">
+          <input type="hidden" name="job_id" value="{{ job[0] }}">
+          {% if job[10] == 'applied' %}
+            <button type="submit" class="inline-flex items-center text-white bg-yellow-600 border border-transparent hover:bg-yellow-700 focus:ring-4 focus:ring-yellow-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">mark as not applied</button>
+          {% else %}
+            <button type="submit" class="inline-flex items-center text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">mark as applied</button>
+          {% endif %}
+        </form>
+
+        <form action="{{ url_for('remove_job') }}" method="POST" class="inline">
+          <input type="hidden" name="job_id" value="{{ job[0] }}">
+          <button type="submit" class="inline-flex items-center text-white bg-red-600 border border-transparent hover:bg-red-700 focus:ring-4 focus:ring-red-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">remove</button>
+        </form>
+      </div>
     </div>
   {% endfor %}
 {% else %}
-  <p>No saved jobs yet. Start searching to save jobs!</p>
+  <p>no saved jobs yet. start searching to save jobs!</p>
 {% endif %}
 {% endblock %}

@@ -1,0 +1,7 @@
+#dropdown-menu {
+  display: none;
+}
+
+.dropdown-parent:hover #dropdown-menu {
+  display: block;
+}

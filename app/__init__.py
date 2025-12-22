@@ -141,8 +141,36 @@ def initialize_db():
   c = db.cursor()
 
   c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT PRIMARY KEY, email TEXT, password TEXT, creation_date DATE, bio TEXT);")
-  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, date_saved INTEGER);")
+  c.execute("CREATE TABLE IF NOT EXISTS saved_locations(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, date_saved INTEGER, status TEXT DEFAULT 'not_applied', lat TEXT, lon TEXT);")
   c.execute("CREATE TABLE IF NOT EXISTS search_history(id TEXT, username TEXT, timestamp DATE, job_title TEXT, filters_applied TEXT);")
+  c.execute("CREATE TABLE IF NOT EXISTS job_views(id TEXT PRIMARY KEY, username TEXT, job_title TEXT, employer TEXT, location TEXT, schedule TEXT, start_date TEXT, end_date TEXT, link TEXT, timestamp INTEGER, lat TEXT, lon TEXT);")
+
+  # Add columns to existing tables if they don't exist
+  try:
+    c.execute("ALTER TABLE saved_locations ADD COLUMN status TEXT DEFAULT 'not_applied';")
+  except:
+    pass
+
+  try:
+    c.execute("ALTER TABLE saved_locations ADD COLUMN lat TEXT;")
+  except:
+    pass
+
+  try:
+    c.execute("ALTER TABLE saved_locations ADD COLUMN lon TEXT;")
+  except:
+    pass
+
+  try:
+    c.execute("ALTER TABLE job_views ADD COLUMN lat TEXT;")
+  except:
+    pass
+
+  try:
+    c.execute("ALTER TABLE job_views ADD COLUMN lon TEXT;")
+  except:
+    pass
+
   db.commit()
   db.close()
 
@@ -215,13 +243,30 @@ def register():
 def homepage():
   if 'username' not in session:
     return redirect(url_for('index'))
-  return render_template("homepage.html", username=session['username'])
+
+  username = session['username']
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+
+  c.execute(
+    """SELECT job_title, employer, location, schedule, start_date, end_date, link, MAX(timestamp) as timestamp, lat, lon
+       FROM job_views
+       WHERE username = ?
+       GROUP BY job_title, employer, location, schedule, start_date, end_date, link
+       ORDER BY timestamp DESC
+       LIMIT 5""",
+    (username,)
+  )
+  recent_jobs = c.fetchall()
+  db.close()
+
+  return render_template("homepage.html", username=username, recent_jobs=recent_jobs)
 
 @app.route("/profile", methods=["GET", "POST"])
 def profile():
   if 'username' not in session:
     return redirect(url_for('index'))
-  
+
   db = sqlite3.connect(DB_FILE)
   c = db.cursor()
   username = session['username']
@@ -236,8 +281,23 @@ def profile():
     dt = datetime.fromtimestamp(creation_date)
     formatted_creation_date = dt.strftime("%B %d, %Y")
 
+  # Calculate account statistics
+  # Total jobs viewed
+  c.execute("SELECT COUNT(DISTINCT job_title || employer || location) FROM job_views WHERE username = ?", (username,))
+  total_viewed = c.fetchone()[0]
+
+  # Total jobs saved
+  c.execute("SELECT COUNT(*) FROM saved_locations WHERE username = ?", (username,))
+  total_saved = c.fetchone()[0]
+
+  # Total applications (jobs marked as applied)
+  c.execute("SELECT COUNT(*) FROM saved_locations WHERE username = ? AND status = 'applied'", (username,))
+  total_applied = c.fetchone()[0]
+
   db.close()
-  return render_template("profile.html", username=username, bio=bio, curr_user=session['username'], creation_date=formatted_creation_date)
+  return render_template("profile.html", username=username, bio=bio, curr_user=session['username'],
+                         creation_date=formatted_creation_date, total_viewed=total_viewed,
+                         total_saved=total_saved, total_applied=total_applied)
 
 @app.route("/edit_profile", methods=["GET", "POST"])
 def edit_profile():
@@ -245,21 +305,25 @@ def edit_profile():
     return redirect(url_for('index'))
 
   username = session['username']
-  db = sqlite3.connect(DB_FILE)
-  c = db.cursor()
-  
+
   if request.method == "POST":
-    bio = (request.form.get("bio") or "").strip()
+    bio = request.form.get("bio", "").strip()
+
+    db = sqlite3.connect(DB_FILE)
+    c = db.cursor()
     c.execute("UPDATE users SET bio = ? WHERE username = ?", (bio, username))
     db.commit()
-    db.close() 
+    db.close()
+
     return redirect(url_for('profile'))
 
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
   c.execute("SELECT bio FROM users WHERE username = ?", (username,))
   result = c.fetchone()
   bio = result[0] if result and result[0] else ""
-
   db.close()
+
   return render_template("edit_profile.html", username=username, bio=bio)
 
 @app.route("/search", methods=["GET", "POST"])
@@ -305,12 +369,31 @@ def job_detail(error=""):
     job_title = request.args.get("job_title", "")
     employer = request.args.get("employer", "")
     location_name = request.args.get("location_name", "")
-    lat = request.args.get("lat")
-    lon = request.args.get("lon")
+    lat = request.args.get("lat", "")
+    lon = request.args.get("lon", "")
     schedule = request.args.get("schedule", "")
     start_date = request.args.get("start_date", "")
     end_date = request.args.get("end_date", "")
     link = request.args.get("link", "")
+
+    # Only save to job_views if we have valid job data
+    if job_title and employer:
+        username = session['username']
+        db = sqlite3.connect(DB_FILE)
+        c = db.cursor()
+
+        view_id = str(time.time())
+        timestamp = int(time.time())
+
+        c.execute(
+            "INSERT INTO job_views VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (view_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, timestamp, lat, lon)
+        )
+        db.commit()
+        db.close()
+
+    # Check if lat/lon are valid
+    has_map = lat and lon and lat != "" and lon != ""
 
     return render_template(
         "job_detail.html",
@@ -323,7 +406,8 @@ def job_detail(error=""):
         start_date=start_date,
         end_date=end_date,
         link=link,
-        error=error
+        error=error,
+        has_map=has_map
     )
 
 @app.route("/my_jobs", methods=["GET", "POST"])
@@ -353,7 +437,7 @@ def logout():
 def save_job():
   if 'username' not in session:
     return redirect(url_for('index'))
-  
+
   username = session['username']
   job_title = request.form.get("job_title", "")
   employer = request.form.get("employer", "")
@@ -362,6 +446,8 @@ def save_job():
   start_date = request.form.get("start_date", "")
   end_date = request.form.get("end_date", "")
   link = request.form.get("link", "")
+  lat = request.form.get("lat", "")
+  lon = request.form.get("lon", "")
 
   allData=[username,job_title,employer,location_name,schedule,start_date,end_date,link]
   if not job_title or not employer:
@@ -379,12 +465,54 @@ def save_job():
       allowToAdd=False
   if(allowToAdd):
       c.execute(
-        "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, date_saved)
+        "INSERT INTO saved_locations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (job_id, username, job_title, employer, location_name, schedule, start_date, end_date, link, date_saved, 'not_applied', lat, lon)
       )
   else:
       return redirect(url_for('my_jobs', error="Job Already Saved"))
 
+  db.commit()
+  db.close()
+
+  return redirect(url_for('my_jobs'))
+
+@app.route("/toggle_status", methods=["POST"])
+def toggle_status():
+  if 'username' not in session:
+    return redirect(url_for('index'))
+
+  job_id = request.form.get("job_id", "")
+  username = session['username']
+
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+
+  # Get current status
+  c.execute("SELECT status FROM saved_locations WHERE id = ? AND username = ?", (job_id, username))
+  result = c.fetchone()
+
+  if result:
+    current_status = result[0]
+    new_status = 'applied' if current_status == 'not_applied' else 'not_applied'
+
+    c.execute("UPDATE saved_locations SET status = ? WHERE id = ? AND username = ?", (new_status, job_id, username))
+    db.commit()
+
+  db.close()
+  return redirect(url_for('my_jobs'))
+
+@app.route("/remove_job", methods=["POST"])
+def remove_job():
+  if 'username' not in session:
+    return redirect(url_for('index'))
+
+  job_id = request.form.get("job_id", "")
+  username = session['username']
+
+  db = sqlite3.connect(DB_FILE)
+  c = db.cursor()
+
+  c.execute("DELETE FROM saved_locations WHERE id = ? AND username = ?", (job_id, username))
   db.commit()
   db.close()
 

@@ -12,33 +12,33 @@ time spent: 0.5 hr
 
 {% block content %}
 <div class="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-2xl mx-auto">
-  <h1 class="text-3xl font-bold mb-4">Create an Account with LiveMKED</h1>
+  <h1 class="text-3xl font-bold mb-4">create an account with LiveMKED</h1>
 
   {% if text %}
-    <p class="text-red-600 mb-3">{{ text }}</p>
+    <p class="text-red-600 mb-3">{{ text|lower }}</p>
   {% endif %}
 
-  <p class="mb-6">Thank you for your interest in using the LiveMKED job search platform! To get started, register an account with us with valid credentials.</p>
+  <p class="mb-6">thank you for your interest in using the LiveMKED job search platform! to get started, register an account with us with valid credentials.</p>
 
   <form action="{{ url_for('register') }}" method="POST" class="flex flex-col items-center gap-3 w-full max-w-sm">
     <div class="w-full text-left">
-      <label class="font-medium">Username</label>
+      <label class="font-medium">username</label>
       <input type="text" name="username" required class="border border-gray-300 rounded px-3 py-2 mt-1 w-full">
     </div>
 
     <div class="w-full text-left">
-      <label class="font-medium">Email</label>
+      <label class="font-medium">email</label>
       <input type="email" name="email" required class="border border-gray-300 rounded px-3 py-2 mt-1 w-full">
     </div>
 
     <div class="w-full text-left">
-      <label class="font-medium">Password</label>
+      <label class="font-medium">password</label>
       <input type="password" name="password" required class="border border-gray-300 rounded px-3 py-2 mt-1 w-full">
     </div>
 
-    <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium w-full mt-2">Register</button>
+    <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium w-full mt-2">register</button>
   </form>
 
-  <p class="mt-4">Already have an account? <a href="{{ url_for('login') }}" class="text-amber-700 hover:underline font-medium">Login Here</a></p>
+  <p class="mt-4">already have an account? <a href="{{ url_for('login') }}" class="text-amber-700 hover:underline font-medium">login here</a></p>
 </div>
 {% endblock %}

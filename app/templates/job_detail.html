@@ -9,18 +9,7 @@
   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
   crossorigin=""
 />
-<style>
-  .job-info-card {
-    background-color: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-  .info-row {
-    margin-bottom: 10px;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='job_detail.css') }}">
 {% endblock %}
 
 {{error}}
@@ -29,38 +18,30 @@
 <div class="flex flex-col items-center max-w-4xl mx-auto">
   <h1 class="text-3xl font-bold mb-4 text-center">{{ job_title or "Job Details" }}</h1>
   
-  <div class="job-info-card w-full">
-    <h2 class="text-2xl font-semibold text-gray-800 mb-3">{{ employer or "Unknown Employer" }}</h2>
-    
-    <div class="info-row">
-      <p><strong>Location:</strong> {{ location_name or "Not specified" }}</p>
-    </div>
+  <div class="bg-neutral-primary-soft block w-full p-6 border border-default rounded-base shadow-xs mb-6">
+    <h2 class="mb-3 text-2xl font-semibold tracking-tight text-heading leading-8">{{ employer or "Unknown Employer" }}</h2>
+
+    <p class="text-body text-sm mb-2"><strong>Location:</strong> {{ location_name or "Not specified" }}</p>
 
     {% if schedule %}
-    <div class="info-row">
-      <p><strong>Schedule:</strong> {{ schedule }}</p>
-    </div>
+      <p class="text-body text-sm mb-2"><strong>Schedule:</strong> {{ schedule }}</p>
     {% endif %}
 
     {% if start_date %}
-    <div class="info-row">
-      <p><strong>Start Date:</strong> {{ start_date }}</p>
-    </div>
+      <p class="text-body text-sm mb-2"><strong>Start Date:</strong> {{ start_date }}</p>
     {% endif %}
 
     {% if end_date %}
-    <div class="info-row">
-      <p><strong>End Date:</strong> {{ end_date }}</p>
-    </div>
+      <p class="text-body text-sm mb-2"><strong>End Date:</strong> {{ end_date }}</p>
     {% endif %}
 
-    <div class="info-row mt-4 flex gap-3">
+    <div class="flex gap-3 mt-4">
       {% if link %}
-      <a href="{{ link }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium inline-block">
+      <a href="{{ link }}" target="_blank" class="inline-flex items-center text-white bg-green-600 border border-transparent hover:bg-green-700 focus:ring-4 focus:ring-green-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">
         Apply Now
       </a>
       {% endif %}
-      
+
       <form action="{{ url_for('save_job') }}" method="POST" class="inline">
         <input type="hidden" name="job_title" value="{{ job_title }}">
         <input type="hidden" name="employer" value="{{ employer }}">
@@ -69,20 +50,25 @@
         <input type="hidden" name="start_date" value="{{ start_date }}">
         <input type="hidden" name="end_date" value="{{ end_date }}">
         <input type="hidden" name="link" value="{{ link }}">
-        <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium">
+        <input type="hidden" name="lat" value="{{ lat }}">
+        <input type="hidden" name="lon" value="{{ lon }}">
+        <button type="submit" class="inline-flex items-center text-white bg-brand border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">
           Save This Job
         </button>
       </form>
     </div>
   </div>
 
-  <h3 class="text-2xl font-bold mb-3">Location Map</h3>
-  <div id="map" style="height: 500px; width: 100%; max-width: 800px;" class="rounded shadow-lg"></div>
+  {% if has_map %}
+    <h3 class="text-2xl font-bold mb-3">location map</h3>
+    <div id="map" style="height: 500px; width: 100%; max-width: 800px;" class="rounded shadow-lg"></div>
+  {% endif %}
 </div>
 
 {% endblock %}
 
 {% block extra_scripts %}
+{% if has_map %}
 <script
   src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -105,4 +91,5 @@
     .bindPopup(`<strong>{{ employer|e }}</strong><br>{{ location_name|e }}`)
     .openPopup();
 </script>
+{% endif %}
 {% endblock %}

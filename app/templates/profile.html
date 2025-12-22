@@ -11,32 +11,45 @@ Time spent: 0.5h
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-{%if curr_user == username %}
-  <h1 class="text-3xl font-bold mb-4">My Profile</h1>
-{% else %}
-  <h1 class="text-3xl font-bold mb-4">{{username}}'s Profile</h1>
-{% endif %}
+<div class="max-w-4xl mx-auto">
+  {%if curr_user == username %}
+    <h1 class="text-3xl font-bold mb-6">my profile</h1>
+  {% else %}
+    <h1 class="text-3xl font-bold mb-6">{{username}}'s profile</h1>
+  {% endif %}
 
-{% if curr_user == username %}
-  <h3 class="text-xl font-semibold mb-2">My Bio!</h3>
-{% else %}
-  <h3 class="text-xl font-semibold mb-2">{{username}}'s Bio!</h3>
-{% endif %}
-{% if creation_date %}
-  <p class="italic mb-3"><em>Member since {{ creation_date }}</em></p>
-{% endif %}
+  {% if curr_user == username %}
+    <!-- Account Statistics -->
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold text-heading mb-3">account statistics</h2>
+      <p class="text-body mb-2"><strong>jobs viewed:</strong> {{ total_viewed }}</p>
+      <p class="text-body mb-2"><strong>jobs saved:</strong> {{ total_saved }}</p>
+      <p class="text-body mb-2"><strong>applications:</strong> {{ total_applied }}</p>
+      {% if creation_date %}
+        <p class="text-body mb-2"><strong>member since:</strong> {{ creation_date }}</p>
+      {% endif %}
+    </div>
+  {% endif %}
 
-<hr class="mb-3">
-{% if bio %}
-  <p class="mb-4">{{ bio }}</p>
-{% else %}
-  <p class="mb-4">No bio posted yet!</p>
-{% endif %}
+  <!-- Bio Section -->
+  <div class="bg-neutral-primary-soft p-6 border border-default rounded-base shadow-xs">
+    {% if curr_user == username %}
+      <h3 class="text-xl font-semibold mb-3">my bio</h3>
+    {% else %}
+      <h3 class="text-xl font-semibold mb-3">{{username}}'s bio</h3>
+    {% endif %}
 
-{% if curr_user == username %}
-  <form action="{{ url_for('edit_profile') }}" method="GET">
-    <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium">Edit Bio</button>
-  </form>
-{% endif %}
-<hr class="mt-4">
+    {% if bio %}
+      <p class="text-body mb-4">{{ bio }}</p>
+    {% else %}
+      <p class="text-body mb-4">no bio posted yet!</p>
+    {% endif %}
+
+    {% if curr_user == username %}
+      <form action="{{ url_for('edit_profile') }}" method="GET">
+        <button type="submit" class="inline-flex items-center text-white bg-brand border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">edit bio</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

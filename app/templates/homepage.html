@@ -10,15 +10,89 @@ time spent: 0.0 hr
 
 {% block title %}Homepage{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
   <h1 class="text-3xl font-bold mb-4">LiveMKED: Work Better, Live Better</h1>
   <h3 class="text-xl font-semibold mb-4">Find your dream job, {{username}}!</h3>
   <hr class="mb-4 w-64">
-  <form action="{{ url_for('search') }}" method="POST" class="flex flex-col items-center gap-3">
-    <input type="text" name="keyword" placeholder="Job title..." required class="border border-gray-300 rounded px-3 py-2 w-64">
-    <input type="text" name="location" placeholder="City or State" class="border border-gray-300 rounded px-3 py-2 w-64">
-    <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded font-medium w-64">Search</button>
+
+  <form action="{{ url_for('search') }}" method="POST" class="max-w-md mx-auto w-full px-4">
+    <label for="keyword" class="block mb-2.5 text-sm font-medium text-heading sr-only">job title</label>
+    <div class="relative mb-3">
+      <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
+        </svg>
+      </div>
+      <input type="text" id="keyword" name="keyword" class="block w-full p-3 ps-9 bg-neutral-secondary-soft border border-default-medium text-heading text-sm rounded focus:ring-brand focus:border-brand shadow-sm placeholder:text-body" placeholder="search job title..." required />
+    </div>
+
+    <label for="location" class="block mb-2.5 text-sm font-medium text-heading sr-only">location</label>
+    <div class="relative mb-3">
+      <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+        <svg class="w-4 h-4 text-body" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.8 13.938h-.011a7 7 0 1 0-11.464.144h-.016l.14.171c.1.127.2.251.3.371L12 21l5.13-6.248c.194-.209.374-.429.54-.659l.13-.155Z"/>
+        </svg>
+      </div>
+      <input type="text" id="location" name="location" class="block w-full p-3 ps-9 bg-neutral-secondary-soft border border-default-medium text-heading text-sm rounded focus:ring-brand focus:border-brand shadow-sm placeholder:text-body" placeholder="city or state" />
+    </div>
+
+    <button type="submit" class="w-full text-white bg-brand hover:bg-amber-800 border border-transparent focus:ring-4 focus:ring-amber-200 shadow-sm font-medium rounded text-sm px-4 py-2.5 focus:outline-none">search</button>
   </form>
 </div>
+
+{% if recent_jobs and recent_jobs|length > 0 %}
+<div class="recent-jobs-section">
+  <h2 class="text-2xl font-bold mb-4 text-center">recently viewed jobs</h2>
+
+  <div class="recent-jobs-scroll-container">
+    {% for job in recent_jobs %}
+      <div class="bg-neutral-primary-soft block w-full p-6 border border-default rounded-base shadow-xs mb-4">
+        <h3 class="mb-2 text-xl font-semibold tracking-tight text-heading leading-7">{{ job[0] or 'Unknown Position' }}</h3>
+        <p class="text-body text-sm mb-2"><strong>Employer:</strong> {{ job[1] or 'Unknown Employer' }}</p>
+
+        {% if job[2] %}
+          <p class="text-body text-sm mb-2"><strong>Location:</strong> {{ job[2] }}</p>
+        {% endif %}
+
+        {% if job[3] %}
+          <p class="text-body text-sm mb-2"><strong>Schedule:</strong> {{ job[3] }}</p>
+        {% endif %}
+
+        {% if job[4] %}
+          <p class="text-body text-sm mb-2"><strong>Start Date:</strong> {{ job[4] }}</p>
+        {% endif %}
+
+        {% if job[5] %}
+          <p class="text-body text-sm mb-2"><strong>End Date:</strong> {{ job[5] }}</p>
+        {% endif %}
+
+        <div class="flex gap-3 mt-4">
+          {% if job[6] %}
+            <a href="{{ job[6] }}" target="_blank" class="inline-flex items-center text-white bg-green-600 border border-transparent hover:bg-green-700 focus:ring-4 focus:ring-green-200 shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">apply now</a>
+          {% endif %}
+
+          <form action="{{ url_for('save_job') }}" method="POST" class="inline">
+            <input type="hidden" name="job_title" value="{{ job[0] }}">
+            <input type="hidden" name="employer" value="{{ job[1] }}">
+            <input type="hidden" name="location_name" value="{{ job[2] }}">
+            <input type="hidden" name="schedule" value="{{ job[3] }}">
+            <input type="hidden" name="start_date" value="{{ job[4] }}">
+            <input type="hidden" name="end_date" value="{{ job[5] }}">
+            <input type="hidden" name="link" value="{{ job[6] }}">
+            <input type="hidden" name="lat" value="{{ job[8] if job|length > 8 else '' }}">
+            <input type="hidden" name="lon" value="{{ job[9] if job|length > 9 else '' }}">
+            <button type="submit" class="inline-flex items-center text-white bg-brand border border-transparent hover:bg-brand-strong focus:ring-4 focus:ring-brand-medium shadow-xs font-medium rounded-base text-sm px-4 py-2 focus:outline-none">save this job</button>
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 {% endblock %}
