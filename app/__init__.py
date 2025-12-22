@@ -149,8 +149,6 @@ def RISEJOBS(page=1, keyword="", location=""):
         "page": page,
         "limit": 200,
         "sortedBy": "United States of America",
-        "isTrending": "true",
-        "includeDescription": "true"
     }
     
     try:
@@ -168,19 +166,22 @@ def RISEJOBS(page=1, keyword="", location=""):
     try:
         for c in data.get("result", {}).get("jobs", []):
             owner = c.get("owner", {})
+            
+            if page == 1:
+              print("RISE keys:", list(c.keys()))
+              print("title sample:", c.get("title"))
+              print("has description?", "description" in c, "descHtml?", "descriptionHtml" in c, "descText?", "descriptionText" in c)
+              break
+
+            title = (c.get("title") or "").lower()
+            company = (owner.get("companyName") or "").lower()
+
+            bk = c.get("descriptionBreakdown") or {}
+            kw_list = bk.get("keywords") if isinstance(bk, dict) else []
+            kw_text = " ".join([str(x).lower() for x in kw_list]) if isinstance(kw_list, list) else ""
+
             if keyword_lower:
-                skip = True
-                try:
-                    job_keywords = c.get("descriptionBreakdown", {}).get("keywords", [])
-                    job_keywords_lower = [k.lower() for k in job_keywords]
-                    
-                    job_title = c.get("title", "").lower()
-                    
-                    if any(keyword_lower in s for s in job_keywords_lower) or keyword_lower in job_title:
-                        skip = False
-                except (KeyError, TypeError):
-                    pass
-                if skip:
+                if (keyword_lower not in title) and (keyword_lower not in company) and (keyword_lower not in kw_text):
                     continue
             
             # Location filtering
@@ -451,11 +452,14 @@ def search():
                 error = usa_error
         
         if source in ["risejobs", "both"]:
-            rise_jobs, rise_error = RISEJOBS(page=1, keyword=keyword, location=location)
+          for page in range(1, 6):
+            rise_jobs, rise_error = RISEJOBS(page=page, keyword=keyword, location=location)
+
             if rise_jobs:
                 jobs.extend(rise_jobs)
-            if rise_error:
-                error = f"{error}; {rise_error}" if error else rise_error
+
+            if rise_error and not error:
+              error = rise_error
 
         return render_template(
             "search.html",
